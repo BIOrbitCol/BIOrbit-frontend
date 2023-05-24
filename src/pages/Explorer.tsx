@@ -5,7 +5,7 @@ import React from 'react'
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), { ssr: false })
 
-export function Explorer(): JSX.Element {
+export default function Explorer(): JSX.Element {
 	return (
 		<>
 			<Wallet />

@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import React from 'react'
-import { Explorer } from './Explorer'
+import Explorer from './Explorer'
 
 const metadata = {
 	title: 'BIOrbit',
