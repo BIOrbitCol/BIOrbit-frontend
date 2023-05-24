@@ -1,5 +1,5 @@
-import { Menu } from '@/components/Menu'
-import { Wallet } from '@/components/Wallet'
+import Menu from '@/components/Menu'
+import Wallet from '@/components/Wallet'
 import dynamic from 'next/dynamic'
 import React from 'react'
 

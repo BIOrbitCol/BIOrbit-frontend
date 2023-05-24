@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 import { Center, Flex, Text } from '@chakra-ui/react'
 
-export function Menu(): JSX.Element {
+export default function Menu(): JSX.Element {
 	return (
 		<Flex
 			width={'500px'}
