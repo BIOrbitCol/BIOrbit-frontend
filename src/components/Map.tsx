@@ -3,13 +3,12 @@ import 'leaflet-defaulticon-compatibility'
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
 import 'leaflet-draw'
 import 'leaflet-draw/dist/leaflet.draw.css'
-import * as L from 'leaflet'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import style from '../styles/Map.module.css'
-import { useEffect } from 'react'
-import DrawControl from './DrawControl'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { DrawControl } from './DrawControl'
+import { jsx } from '@emotion/react'
 
-export default function Map() {
+export default function Map(): JSX.Element {
 	return (
 		<>
 			<MapContainer

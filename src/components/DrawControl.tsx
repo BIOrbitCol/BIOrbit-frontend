@@ -1,8 +1,6 @@
-import 'leaflet-draw'
-import 'leaflet-draw/dist/leaflet.draw.css'
 import * as L from 'leaflet'
-import { useMap } from 'react-leaflet'
-import { useEffect } from 'react'
+import { FeatureGroup } from 'react-leaflet'
+import { EditControl } from 'react-leaflet-draw'
 
 type DrawEvent = {
 	layer: L.Layer
@@ -10,33 +8,35 @@ type DrawEvent = {
 	// Add other properties here if needed
 }
 
-export default function DrawControl() {
-	const map: L.Map = useMap()
+export function DrawControl(): JSX.Element {
+	const onCreated = (event: L.LeafletEvent): void => {
+		const drawEvent: DrawEvent = event as unknown as DrawEvent
+		const layer: L.Layer = drawEvent.layer
+		const type: string = drawEvent.layerType
 
-	useEffect(() => {
-		const drawFeature: L.FeatureGroup = new L.FeatureGroup()
-		map.addLayer(drawFeature)
+		if (
+			layer instanceof L.Polygon ||
+			layer instanceof L.Polyline ||
+			layer instanceof L.Rectangle ||
+			layer instanceof L.Circle ||
+			layer instanceof L.Marker
+		) {
+			layer.bindPopup(`<p>${JSON.stringify(layer.toGeoJSON())}<p>`)
+		}
+	}
 
-		const drawControl: L.Control.Draw = new L.Control.Draw({
-			edit: {
-				featureGroup: drawFeature,
-				remove: false
-			},
-			draw: {
-				polygon: {},
-				polyline: {},
-				rectangle: {},
-				circle: {},
-				marker: {}
-			}
+	const onEdited = (event: L.LeafletEvent): void => {
+		const drawEvent: DrawEvent = event as unknown as DrawEvent
+		const target = event.target as L.FeatureGroup
+		const layers: L.Layer[] = []
+
+		target.eachLayer((layer: L.Layer) => {
+			layers.push(layer)
 		})
-		map.addControl(drawControl)
 
-		map.on('draw:created', (event: L.LeafletEvent) => {
-			const drawEvent: DrawEvent = event as unknown as DrawEvent
-			const layer: L.Layer = drawEvent.layer
-			const type: string = drawEvent.layerType
+		const type: string = drawEvent.layerType
 
+		layers.forEach((layer: L.Layer) => {
 			if (
 				layer instanceof L.Polygon ||
 				layer instanceof L.Polyline ||
@@ -44,29 +44,26 @@ export default function DrawControl() {
 				layer instanceof L.Circle ||
 				layer instanceof L.Marker
 			) {
-				console.log('GeoJSON: ', layer.toGeoJSON())
-				layer.bindPopup(`<p>${JSON.stringify(layer.toGeoJSON())}<p>`)
+				layer.bindPopup(
+					`coordinates: <p>${JSON.stringify(layer.toGeoJSON())}<p>`
+				)
 			}
-
-			drawFeature.addLayer(layer)
 		})
-
-		map.on('draw:edited', (event: L.LeafletEvent) => {
-			const drawEvent: DrawEvent = event as unknown as DrawEvent
-			const target = event.target as L.FeatureGroup
-			const layers: L.Layer[] = []
-
-			target.eachLayer((layer: L.Layer) => {
-				layers.push(layer)
-			})
-
-			const type: string = drawEvent.layerType
-
-			layers.forEach((layer: L.Layer) => {
-				console.log('layer: ', layer)
-			})
-		})
-	}, [map])
-
-	return null
+	}
+	return (
+		<FeatureGroup>
+			<EditControl
+				position='topleft'
+				draw={{
+					circle: false,
+					circlemarker: false,
+					marker: false,
+					rectangle: false,
+					polyline: false
+				}}
+				onCreated={onCreated}
+				onEdited={onEdited}
+			/>
+		</FeatureGroup>
+	)
 }
