@@ -28,8 +28,8 @@ export function Project(): JSX.Element {
 		Description:
 			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
 		State: 'Colombia',
-		RegistryName: 'Verra',
-		Url: 'www'
+		RegistryName: 'OpenSea',
+		Url: 'https://opensea.io/'
 	}
 
 	const elRef = useRef(null)

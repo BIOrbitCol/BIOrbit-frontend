@@ -6,7 +6,6 @@ import 'leaflet-draw/dist/leaflet.draw.css'
 import style from '../styles/Map.module.css'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { DrawControl } from './DrawControl'
-import { jsx } from '@emotion/react'
 
 export default function Map(): JSX.Element {
 	return (

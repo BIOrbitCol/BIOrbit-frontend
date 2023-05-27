@@ -11,13 +11,21 @@ import {
 	TabList,
 	TabPanels,
 	Tab,
-	TabPanel
+	TabPanel,
+	Spinner
 } from '@chakra-ui/react'
 import { useAccount } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { Project } from './Project'
+import { Results } from './Results'
 
-export default function Menu(): JSX.Element {
+type Props = {
+	loading: boolean
+	projects: Object[]
+}
+
+export default function Menu(props: Props): JSX.Element {
+	const { loading, projects } = props
 	const { address } = useAccount()
 
 	return (
@@ -45,28 +53,38 @@ export default function Menu(): JSX.Element {
 			>
 				<Image src={logo} alt='logo' width={250} />
 			</Center>
-			<Tabs>
-				<TabList>
-					<Tab>Protected areas</Tab>
-					<Tab>{address && 'Monitor'}</Tab>
-				</TabList>
+			{loading ? (
+				<Spinner
+					margin={'auto'}
+					thickness='4px'
+					speed='0.8s'
+					emptyColor='gray.200'
+					color='blue.600'
+					size='xl'
+				/>
+			) : (
+				<Tabs>
+					<TabList>
+						<Tab>Protected areas</Tab>
+						<Tab>{address && 'Monitor'}</Tab>
+					</TabList>
 
-				<TabPanels>
-					<TabPanel>
-						<Center padding={3}>
-							<Project />
-							{/* <Text size={'md'}>- No information -</Text> */}
-						</Center>
-					</TabPanel>
-					<TabPanel>
-						{address && (
-							<Box padding={3}>
-								<Button colorScheme='blue'>Monitor protected area</Button>
-							</Box>
-						)}
-					</TabPanel>
-				</TabPanels>
-			</Tabs>
+					<TabPanels>
+						<TabPanel>
+							<Center padding={3}>
+								<Results projects={projects} />
+							</Center>
+						</TabPanel>
+						<TabPanel>
+							<Center padding={3}>
+								{address && (
+									<Button colorScheme='blue'>Monitor protected area</Button>
+								)}
+							</Center>
+						</TabPanel>
+					</TabPanels>
+				</Tabs>
+			)}
 		</Flex>
 	)
 }
