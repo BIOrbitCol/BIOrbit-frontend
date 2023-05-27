@@ -16,36 +16,22 @@ import {
 	Link
 } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
-import scrollIntoView from 'scroll-into-view'
 import { useEffect, useRef } from 'react'
 import ReactReadMoreReadLess from 'react-read-more-read-less'
+import { MonitoringArea } from '@/models/monitoring-area.model'
 
-export function Project(): JSX.Element {
-	const project = {
-		Id: 0,
-		Name: 'Parque Selva de Florencia',
-		Acreage: 500,
-		Description:
-			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
-		State: 'Colombia',
-		RegistryName: 'OpenSea',
-		Url: 'https://opensea.io/'
-	}
+type Props = {
+	project: MonitoringArea
+}
+
+export function Project(props: Props): JSX.Element {
+	const { project } = props
 
 	const elRef = useRef(null)
 	const selectedId = 0
 
-	// Effect called when selectedId updates
-	// useEffect(() => {
-	// 	// Scroll to element if selected
-	// 	if (selectedId == project.Id) {
-	// 		// Scroll to element
-	// 		scrollIntoView(elRef.current, {
-	// 			time: 4000,
-	// 			align: { top: 0, topOffset: 7 }
-	// 		})
-	// 	}
-	// }, [selectedId])
+	//Effect called when selectedId updates
+	useEffect(() => {}, [selectedId])
 
 	return (
 		<Box
@@ -53,8 +39,8 @@ export function Project(): JSX.Element {
 			backgroundColor={'white'}
 			borderWidth={'1px'}
 			borderStyle={'solid'}
-			borderColor={selectedId == project.Id ? 'gray.500' : 'gray.300'}
-			boxShadow={selectedId == project.Id ? 'md' : ''}
+			borderColor={selectedId == project.id ? 'gray.500' : 'gray.300'}
+			boxShadow={selectedId == project.id ? 'md' : ''}
 			w={'100%'}
 			p={3}
 			rounded='sm'
@@ -67,19 +53,10 @@ export function Project(): JSX.Element {
 					fontFamily={`'Archivo', 'Raleway', serif`}
 					color='gray.700'
 				>
-					{project.Name}
+					{project.name}
 				</Heading>
 				<Spacer />
-				<Tag
-					size={'sm'}
-					variant='solid'
-					backgroundColor='green.500'
-					textAlign={'center'}
-					minW='fit-content'
-					ml={1}
-				>
-					{project.Acreage} Hectareas
-				</Tag>
+				{getTagComponent(project.state)}
 			</Flex>
 			<Text fontSize='xs'>
 				<ReactReadMoreReadLess
@@ -87,7 +64,7 @@ export function Project(): JSX.Element {
 					readMoreText={'Read more'}
 					readLessText={'Read less'}
 				>
-					{project.Description}
+					{project.description}
 				</ReactReadMoreReadLess>
 			</Text>
 			<TableContainer mt={2} overflow='hidden'>
@@ -95,66 +72,62 @@ export function Project(): JSX.Element {
 					<Tbody>
 						<Tr>
 							<Td fontWeight={'bold'} fontSize={'xs'}>
-								State
+								Extension
 							</Td>
-							<Td fontSize={'xs'}>{project.State}</Td>
+							<Td fontSize={'xs'}>{project.extension} hectareas</Td>
 						</Tr>
 						<Tr>
 							<Td fontWeight={'bold'} fontSize={'xs'}>
-								State
+								Country
 							</Td>
-							<Td fontSize={'xs'}>{project.State}</Td>
+							<Td fontSize={'xs'}>{project.country}</Td>
 						</Tr>
 						<Tr>
 							<Td fontWeight={'bold'} fontSize={'xs'}>
-								State
+								owner
 							</Td>
-							<Td fontSize={'xs'}>{project.State}</Td>
+							<Td fontSize={'xs'}>{project.owner}</Td>
 						</Tr>
-						<Tr>
-							<Td fontWeight={'bold'} fontSize={'xs'}>
-								State
-							</Td>
-							<Td fontSize={'xs'}>{project.State}</Td>
-						</Tr>
-						<Tr>
-							<Td fontWeight={'bold'} fontSize={'xs'}>
-								State
-							</Td>
-							<Td fontSize={'xs'}>{project.State}</Td>
-						</Tr>
-						{/* <Tr>
-							<Td fontWeight={'bold'} fontSize={'xs'}>
-								Category
-							</Td>
-							<Td fontSize={'xs'}>{project.CategoryName}</Td>
-						</Tr>
-						<Tr>
-							<Td fontWeight={'bold'} fontSize={'xs'}>
-								Proponent
-							</Td>
-							<Td fontSize={'xs'}>{project.ProponentName}</Td>
-						</Tr>
-						<Tr>
-							<Td fontWeight={'bold'} fontSize={'xs'}>
-								Credit Period
-							</Td>
-							<Td fontSize={'xs'}>{project.CreditPeriod}</Td>
-						</Tr>
-						<Tr>
-							<Td fontWeight={'bold'} fontSize={'xs'}>
-								Annual Reductions
-							</Td>
-							<Td fontSize={'xs'}>{project.EmissionReductions}</Td>
-						</Tr>*/}
 					</Tbody>
 				</Table>
 			</TableContainer>
 			<Text fontSize={'xs'} mt={2} float='right'>
-				<Link size='sm' href={project.Url} isExternal>
-					View on {project.RegistryName} <ExternalLinkIcon />
+				<Link size='sm' href={project.url} isExternal>
+					View on {project.registry} <ExternalLinkIcon />
 				</Link>
 			</Text>
 		</Box>
+	)
+}
+
+function getTagComponent(state: string): JSX.Element {
+	let backgroundColor: string
+
+	switch (state) {
+		case 'active':
+			backgroundColor = 'green.500'
+			break
+		case 'paused':
+			backgroundColor = 'gray.500'
+			break
+		case 'inactive':
+			backgroundColor = 'red.500'
+			break
+		default:
+			backgroundColor = 'gray.500'
+			break
+	}
+
+	return (
+		<Tag
+			size={'sm'}
+			variant='solid'
+			backgroundColor={backgroundColor}
+			textAlign={'center'}
+			minW='fit-content'
+			ml={1}
+		>
+			{state}
+		</Tag>
 	)
 }

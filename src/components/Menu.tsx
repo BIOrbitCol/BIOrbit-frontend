@@ -1,6 +1,5 @@
 import logo from '@/assets/images/brand.svg'
 import Image from 'next/image'
-
 import {
 	Box,
 	Button,
@@ -16,16 +15,32 @@ import {
 } from '@chakra-ui/react'
 import { useAccount } from 'wagmi'
 import { useEffect, useState } from 'react'
-import { Project } from './Project'
 import { Results } from './Results'
+import { MonitoringArea } from '@/models/monitoring-area.model'
+import { ResultsPagination } from './ResultsPagination'
 
 type Props = {
-	loading: boolean
-	projects: Object[]
+	isLoading: boolean
+	handlePage: React.Dispatch<React.SetStateAction<number>>
+	handleSelect: React.Dispatch<React.SetStateAction<null>>
+	page: number
+	pageSize: number
+	projects: MonitoringArea[]
+	selectedId: null
+	total: number
 }
 
 export default function Menu(props: Props): JSX.Element {
-	const { loading, projects } = props
+	const {
+		isLoading,
+		handlePage,
+		handleSelect,
+		page,
+		pageSize,
+		projects,
+		selectedId,
+		total
+	} = props
 	const { address } = useAccount()
 
 	return (
@@ -53,7 +68,7 @@ export default function Menu(props: Props): JSX.Element {
 			>
 				<Image src={logo} alt='logo' width={250} />
 			</Center>
-			{loading ? (
+			{isLoading ? (
 				<Spinner
 					margin={'auto'}
 					thickness='4px'
@@ -68,12 +83,22 @@ export default function Menu(props: Props): JSX.Element {
 						<Tab>Protected areas</Tab>
 						<Tab>{address && 'Monitor'}</Tab>
 					</TabList>
-
-					<TabPanels>
-						<TabPanel>
-							<Center padding={3}>
+					<TabPanels overflowY='auto' maxH='77.9vh'>
+						<TabPanel padding={0}>
+							<>
 								<Results projects={projects} />
-							</Center>
+								{projects && projects.length && (
+									<ResultsPagination
+										page={page}
+										pageSize={pageSize}
+										total={total}
+										projects={projects}
+										handlePage={handlePage}
+										isLoading={false}
+										selectedId={null}
+									/>
+								)}
+							</>
 						</TabPanel>
 						<TabPanel>
 							<Center padding={3}>
