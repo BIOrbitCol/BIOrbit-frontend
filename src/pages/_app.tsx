@@ -4,7 +4,8 @@ import {
 	RainbowKitProvider,
 	getDefaultWallets,
 	connectorsForWallets,
-	darkTheme
+	darkTheme,
+	midnightTheme
 } from '@rainbow-me/rainbowkit'
 import type { AppProps } from 'next/app'
 import { configureChains, createConfig, WagmiConfig } from 'wagmi'
@@ -51,9 +52,10 @@ export default function App({ Component, pageProps }: AppProps): JSX.Element {
 		<WagmiConfig config={wagmiConfig}>
 			<RainbowKitProvider
 				chains={chains}
+				coolMode
 				modalSize='compact'
 				theme={darkTheme({
-					accentColor: '#7b3fe4',
+					accentColor: '#2b6cb0',
 					accentColorForeground: 'white',
 					borderRadius: 'small',
 					fontStack: 'system',
