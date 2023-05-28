@@ -42,6 +42,7 @@ export function Project(props: Props): JSX.Element {
 			p={3}
 			rounded='sm'
 			/*onClick={() => handleSelect(project.Id)}*/
+			_hover={{ borderColor: 'blue.500' }}
 			cursor='pointer'
 		>
 			<Flex alignItems='start' mb={3}>
