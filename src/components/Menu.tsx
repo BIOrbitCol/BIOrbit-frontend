@@ -1,20 +1,25 @@
 import logo from '@/assets/images/brand.svg'
+import { SearchIcon } from '@chakra-ui/icons'
+
 import Image from 'next/image'
 import {
 	Box,
 	Button,
 	Center,
 	Flex,
+	InputGroup,
+	InputRightElement,
 	Text,
 	Tabs,
 	TabList,
 	TabPanels,
 	Tab,
 	TabPanel,
-	Spinner
+	Spinner,
+	Input
 } from '@chakra-ui/react'
 import { useAccount } from 'wagmi'
-import { useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 import { Results } from './Results'
 import { MonitoringArea } from '@/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
@@ -27,7 +32,9 @@ type Props = {
 	pageSize: number
 	projects: MonitoringArea[]
 	selectedId: null
+	setProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
 	setShowDrawControl: React.Dispatch<React.SetStateAction<boolean>>
+	setTotal: React.Dispatch<React.SetStateAction<number>>
 	total: number
 }
 
@@ -40,9 +47,13 @@ export default function Menu(props: Props): JSX.Element {
 		pageSize,
 		projects,
 		selectedId,
+		setProjects,
 		setShowDrawControl,
+		setTotal,
 		total
 	} = props
+
+	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
 	const { address } = useAccount()
 
 	const onMonitorTab = () => {
@@ -51,6 +62,16 @@ export default function Menu(props: Props): JSX.Element {
 
 	const onProtectedAreasTab = () => {
 		setShowDrawControl(false)
+	}
+
+	const searchProject = (event: ChangeEvent<HTMLInputElement>) => {
+		const inputValue: string = event.target.value
+		const filtered: MonitoringArea[] = projects.filter(
+			(project: MonitoringArea) =>
+				project.name.toLowerCase().includes(inputValue.toLowerCase())
+		)
+		setFiltedProjects(filtered)
+		setTotal(filtered.length)
 	}
 
 	return (
@@ -89,20 +110,47 @@ export default function Menu(props: Props): JSX.Element {
 				/>
 			) : (
 				<Tabs>
-					<TabList>
-						<Tab onClick={onProtectedAreasTab}>Protected areas</Tab>
-						<Tab onClick={onMonitorTab}>{address && 'Monitor'}</Tab>
-					</TabList>
+					<Box
+						display={'flex'}
+						alignItems={'center'}
+						justifyContent={'space-between'}
+					>
+						<TabList>
+							<Tab onClick={onProtectedAreasTab}>Protected areas</Tab>
+							<Tab onClick={onMonitorTab}>{address && 'Monitor'}</Tab>
+						</TabList>
+
+						<Box>
+							<InputGroup>
+								<Input
+									width={180}
+									height={7}
+									marginY={'8px'}
+									marginX={'16px'}
+									placeholder='Search'
+									onChange={searchProject}
+								/>
+								<InputRightElement paddingTop={1} paddingRight={5}>
+									<SearchIcon
+										w={4}
+										h={4}
+										color='black.600'
+										cursor={'pointer'}
+									/>
+								</InputRightElement>
+							</InputGroup>
+						</Box>
+					</Box>
 					<TabPanels overflowY='auto' maxH='77.9vh'>
 						<TabPanel padding={0}>
 							<>
-								<Results projects={projects} />
+								<Results projects={filtedProjects} />
 								{projects && projects.length && (
 									<ResultsPagination
 										page={page}
 										pageSize={pageSize}
 										total={total}
-										projects={projects}
+										projects={filtedProjects}
 										handlePage={handlePage}
 										isLoading={false}
 										selectedId={null}

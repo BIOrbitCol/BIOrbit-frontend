@@ -37,7 +37,9 @@ export default function Explorer(): JSX.Element {
 				pageSize={pageSize}
 				projects={projects}
 				selectedId={selectedId}
+				setProjects={setProjects}
 				setShowDrawControl={setShowDrawControl}
+				setTotal={setTotal}
 				total={total}
 			/>
 			<MapWithNoSSR showDrawControl={showDrawControl} />
@@ -60,7 +62,7 @@ const monitoringAreas: MonitoringArea[] = [
 	},
 	{
 		id: 1,
-		name: 'Parque Selva de Florencia',
+		name: 'Parque Selva de Caquetá',
 		extension: 500,
 		description:
 			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
@@ -72,7 +74,7 @@ const monitoringAreas: MonitoringArea[] = [
 	},
 	{
 		id: 2,
-		name: 'Parque Selva de Florencia',
+		name: 'Parque Selva de Lomas',
 		extension: 500,
 		description:
 			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
@@ -84,7 +86,7 @@ const monitoringAreas: MonitoringArea[] = [
 	},
 	{
 		id: 3,
-		name: 'Parque Selva de Florencia',
+		name: 'Parque Selva de Bahía',
 		extension: 500,
 		description:
 			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
