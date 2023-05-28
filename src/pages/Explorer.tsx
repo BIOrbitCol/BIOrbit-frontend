@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react'
 const MapWithNoSSR = dynamic(() => import('../components/Map'), { ssr: false })
 
 export default function Explorer(): JSX.Element {
+	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [page, setPage] = useState<number>(0)
 	const [projects, setProjects] = useState<MonitoringArea[]>([])
@@ -36,9 +37,10 @@ export default function Explorer(): JSX.Element {
 				pageSize={pageSize}
 				projects={projects}
 				selectedId={selectedId}
+				setShowDrawControl={setShowDrawControl}
 				total={total}
 			/>
-			<MapWithNoSSR />
+			<MapWithNoSSR showDrawControl={showDrawControl} />
 		</>
 	)
 }

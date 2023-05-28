@@ -4,10 +4,17 @@ import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 import 'leaflet-draw'
 import 'leaflet-draw/dist/leaflet.draw.css'
 import style from '../styles/Map.module.css'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer } from 'react-leaflet'
 import { DrawControl } from './DrawControl'
+import { useAccount } from 'wagmi'
 
-export default function Map(): JSX.Element {
+type Props = {
+	showDrawControl: boolean
+}
+
+export default function Map(props: Props): JSX.Element {
+	const { showDrawControl } = props
+
 	return (
 		<>
 			<MapContainer
@@ -20,12 +27,7 @@ export default function Map(): JSX.Element {
 					attribution='&copy; <a href="http://maps.stamen.com/#watercolor/12/37.7706/-122.3782">Stamen</a> Terrain Map'
 					url='https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg'
 				/>
-				<DrawControl />
-				{/* <Marker position={[51.505, -0.09]}>
-					<Popup>
-						A pretty CSS3 popup. <br /> Easily customizable.
-					</Popup>
-				</Marker> */}
+				{showDrawControl && <DrawControl showDrawControl={showDrawControl} />}
 			</MapContainer>
 		</>
 	)

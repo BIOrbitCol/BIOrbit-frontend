@@ -27,6 +27,7 @@ type Props = {
 	pageSize: number
 	projects: MonitoringArea[]
 	selectedId: null
+	setShowDrawControl: React.Dispatch<React.SetStateAction<boolean>>
 	total: number
 }
 
@@ -39,9 +40,18 @@ export default function Menu(props: Props): JSX.Element {
 		pageSize,
 		projects,
 		selectedId,
+		setShowDrawControl,
 		total
 	} = props
 	const { address } = useAccount()
+
+	const onMonitorTab = () => {
+		setShowDrawControl(true)
+	}
+
+	const onProtectedAreasTab = () => {
+		setShowDrawControl(false)
+	}
 
 	return (
 		<Flex
@@ -80,8 +90,8 @@ export default function Menu(props: Props): JSX.Element {
 			) : (
 				<Tabs>
 					<TabList>
-						<Tab>Protected areas</Tab>
-						<Tab>{address && 'Monitor'}</Tab>
+						<Tab onClick={onProtectedAreasTab}>Protected areas</Tab>
+						<Tab onClick={onMonitorTab}>{address && 'Monitor'}</Tab>
 					</TabList>
 					<TabPanels overflowY='auto' maxH='77.9vh'>
 						<TabPanel padding={0}>

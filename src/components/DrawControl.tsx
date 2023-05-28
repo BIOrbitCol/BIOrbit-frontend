@@ -1,4 +1,5 @@
 import * as L from 'leaflet'
+import { useEffect, useRef } from 'react'
 import { FeatureGroup } from 'react-leaflet'
 import { EditControl } from 'react-leaflet-draw'
 
@@ -8,7 +9,15 @@ type DrawEvent = {
 	// Add other properties here if needed
 }
 
-export function DrawControl(): JSX.Element {
+type Props = {
+	showDrawControl: boolean
+}
+
+export function DrawControl(props: Props): JSX.Element {
+	const { showDrawControl } = props
+
+	const featureGroupRef = useRef<L.FeatureGroup | null>(null)
+
 	const onCreated = (event: L.LeafletEvent): void => {
 		const drawEvent: DrawEvent = event as unknown as DrawEvent
 		const layer: L.Layer = drawEvent.layer
@@ -50,8 +59,15 @@ export function DrawControl(): JSX.Element {
 			}
 		})
 	}
+
+	useEffect(() => {
+		if (!showDrawControl && featureGroupRef.current) {
+			featureGroupRef.current.clearLayers()
+		}
+	}, [showDrawControl])
+
 	return (
-		<FeatureGroup>
+		<FeatureGroup ref={featureGroupRef}>
 			<EditControl
 				position='topleft'
 				draw={{
