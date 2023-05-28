@@ -144,7 +144,11 @@ export default function Menu(props: Props): JSX.Element {
 					<TabPanels overflowY='auto' maxH='77.9vh'>
 						<TabPanel padding={0}>
 							<>
-								<Results projects={filtedProjects} />
+								{filtedProjects.length === 0 ? (
+									<Results projects={projects} />
+								) : (
+									<Results projects={filtedProjects} />
+								)}
 								{projects && projects.length && (
 									<ResultsPagination
 										page={page}
