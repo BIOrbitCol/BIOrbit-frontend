@@ -9,7 +9,6 @@ import {
 	Flex,
 	InputGroup,
 	InputRightElement,
-	Text,
 	Tabs,
 	TabList,
 	TabPanels,
@@ -19,7 +18,7 @@ import {
 	Input
 } from '@chakra-ui/react'
 import { useAccount } from 'wagmi'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Results } from './Results'
 import { MonitoringArea } from '@/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
@@ -53,15 +52,20 @@ export default function Menu(props: Props): JSX.Element {
 		total
 	} = props
 
-	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
 	const { address } = useAccount()
+
+	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
+	const [enableSearcher, setEnableSearcher] = useState<boolean>(true)
+	const protectedAreasTabRef = useRef<HTMLButtonElement>(null)
 
 	const onMonitorTab = () => {
 		setShowDrawControl(true)
+		setEnableSearcher(false)
 	}
 
 	const onProtectedAreasTab = () => {
 		setShowDrawControl(false)
+		setEnableSearcher(true)
 	}
 
 	const searchProject = (event: ChangeEvent<HTMLInputElement>) => {
@@ -70,9 +74,21 @@ export default function Menu(props: Props): JSX.Element {
 			(project: MonitoringArea) =>
 				project.name.toLowerCase().includes(inputValue.toLowerCase())
 		)
+
+		if (filtered.length === 0) {
+			setFiltedProjects(projects)
+			setTotal(projects.length)
+			return
+		}
 		setFiltedProjects(filtered)
 		setTotal(filtered.length)
 	}
+
+	useEffect(() => {
+		if (!address && protectedAreasTabRef.current) {
+			protectedAreasTabRef.current.click()
+		}
+	}, [address])
 
 	return (
 		<Flex
@@ -116,8 +132,12 @@ export default function Menu(props: Props): JSX.Element {
 						justifyContent={'space-between'}
 					>
 						<TabList>
-							<Tab onClick={onProtectedAreasTab}>Protected areas</Tab>
-							<Tab onClick={onMonitorTab}>{address && 'Monitor'}</Tab>
+							<Tab ref={protectedAreasTabRef} onClick={onProtectedAreasTab}>
+								Protected areas
+							</Tab>
+							{address && (
+								<Tab onClick={onMonitorTab}>{address && 'Monitor'}</Tab>
+							)}
 						</TabList>
 
 						<Box>
@@ -128,7 +148,7 @@ export default function Menu(props: Props): JSX.Element {
 									marginY={'8px'}
 									marginX={'16px'}
 									placeholder='Search'
-									onChange={searchProject}
+									onChange={enableSearcher ? searchProject : () => {}}
 								/>
 								<InputRightElement paddingTop={1} paddingRight={5}>
 									<SearchIcon
