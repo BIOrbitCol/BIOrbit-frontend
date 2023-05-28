@@ -1,6 +1,3 @@
-// import '@fontsource/archivo/700.css'
-// import '../css/style.css'
-
 import {
 	Flex,
 	Box,
@@ -16,9 +13,9 @@ import {
 	Link
 } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
+import { MonitoringArea } from '@/models/monitoring-area.model'
 import { useEffect, useRef } from 'react'
 import ReactReadMoreReadLess from 'react-read-more-read-less'
-import { MonitoringArea } from '@/models/monitoring-area.model'
 
 type Props = {
 	project: MonitoringArea
@@ -106,6 +103,9 @@ function getTagComponent(state: string): JSX.Element {
 	switch (state) {
 		case 'active':
 			backgroundColor = 'green.500'
+			break
+		case 'monitor':
+			backgroundColor = 'yellow.500'
 			break
 		case 'paused':
 			backgroundColor = 'gray.500'

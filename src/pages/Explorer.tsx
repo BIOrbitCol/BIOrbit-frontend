@@ -62,7 +62,7 @@ const monitoringAreas: MonitoringArea[] = [
 		extension: 500,
 		description:
 			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
-		state: 'active',
+		state: 'monitor',
 		registry: 'Opensea',
 		country: 'Colombia',
 		owner: '0xE8e1543235e6C35C656ef0b28526C61571583f4B',
