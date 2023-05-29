@@ -36,7 +36,7 @@ export function Project(props: Props): JSX.Element {
 			backgroundColor={'white'}
 			borderWidth={'1px'}
 			borderStyle={'solid'}
-			borderColor={selectedId == project.id ? 'gray.500' : 'gray.300'}
+			borderColor={selectedId == project.id ? 'blue.500' : 'blue.300'}
 			boxShadow={selectedId == project.id ? 'md' : ''}
 			w={'100%'}
 			p={3}

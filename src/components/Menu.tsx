@@ -1,6 +1,6 @@
 import logo from '@/assets/images/brand.svg'
 import { SearchIcon } from '@chakra-ui/icons'
-import { Field, Form, Formik, FormikHelpers } from 'formik'
+import { Field, Form, Formik } from 'formik'
 import countriesJson from '../assets/json/countries.json'
 
 import Image from 'next/image'
@@ -12,7 +12,6 @@ import {
 	FormControl,
 	FormLabel,
 	FormErrorMessage,
-	FormHelperText,
 	InputGroup,
 	InputRightElement,
 	HStack,
@@ -71,14 +70,18 @@ export default function Menu(props: Props): JSX.Element {
 	const { address } = useAccount()
 
 	const [enableSearcher, setEnableSearcher] = useState<boolean>(true)
+	const [extensionAreaOption, setExtensionAreaOption] =
+		useState<string>('Polygon')
 	const protectedAreasTabRef = useRef<HTMLButtonElement>(null)
 
-	const onMonitorTab = () => {
-		setShowDrawControl(true)
+	const onMonitorTab = (): void => {
+		if (extensionAreaOption === 'Polygon') {
+			setShowDrawControl(true)
+		}
 		setEnableSearcher(false)
 	}
 
-	const onProtectedAreasTab = () => {
+	const onProtectedAreasTab = (): void => {
 		setShowDrawControl(false)
 		setEnableSearcher(true)
 	}
@@ -100,8 +103,20 @@ export default function Menu(props: Props): JSX.Element {
 	}
 
 	useEffect(() => {
+		if (extensionAreaOption === 'Polygon') {
+			setShowDrawControl(true)
+		} else {
+			setShowDrawControl(false)
+		}
+	}, [extensionAreaOption])
+
+	useEffect(() => {
 		if (!address && protectedAreasTabRef.current) {
 			protectedAreasTabRef.current.click()
+		}
+
+		if (extensionAreaOption === 'Polygon') {
+			setShowDrawControl(false)
 		}
 	}, [address])
 
@@ -128,7 +143,7 @@ export default function Menu(props: Props): JSX.Element {
 				borderBottomStyle={'solid'}
 				p={2}
 			>
-				<Image src={logo} alt='logo' width={250} />
+				<Image src={logo} alt='logo' width={250} priority={true} />
 			</Center>
 			{isLoading ? (
 				<Spinner
@@ -258,10 +273,11 @@ export default function Menu(props: Props): JSX.Element {
 												{({ field, form }) => (
 													<FormControl as='fieldset'>
 														<FormLabel as='legend' fontSize={14}>
-															Coordinates
+															Area extension
 														</FormLabel>
 														<RadioGroup
-															defaultValue='Polygon'
+															onChange={setExtensionAreaOption}
+															value={extensionAreaOption}
 															marginBottom={!form.errors.coordinates && 4}
 														>
 															<HStack spacing='24px'>

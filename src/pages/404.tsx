@@ -21,7 +21,7 @@ export default function NotFoundPage() {
 			justifyContent={'center'}
 			background={'#2b6cb0'}
 		>
-			<Image width={280} src={logo} alt='logo' />
+			<Image width={280} src={logo} alt='logo' priority={true} />
 			<Text marginY={6} fontSize='3xl' as='b'>
 				This Page could not be found
 			</Text>
