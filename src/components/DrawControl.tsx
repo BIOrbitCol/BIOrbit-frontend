@@ -10,15 +10,17 @@ type DrawEvent = {
 }
 
 type Props = {
+	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
 	showDrawControl: boolean
 }
 
 export function DrawControl(props: Props): JSX.Element {
-	const { showDrawControl } = props
+	const { setCoordinates, showDrawControl } = props
 
 	const featureGroupRef = useRef<L.FeatureGroup | null>(null)
 
 	const onCreated = (event: L.LeafletEvent): void => {
+		let coordinates: number[][] = []
 		const drawEvent: DrawEvent = event as unknown as DrawEvent
 		const layer: L.Layer = drawEvent.layer
 		const type: string = drawEvent.layerType
@@ -31,6 +33,11 @@ export function DrawControl(props: Props): JSX.Element {
 			layer instanceof L.Marker
 		) {
 			layer.bindPopup(`<p>${JSON.stringify(layer.toGeoJSON())}<p>`)
+			if (coordinates.length === 0) {
+				coordinates = extractCoordinates(JSON.stringify(layer.toGeoJSON()))
+				console.log(coordinates)
+				setCoordinates(coordinates)
+			}
 		}
 	}
 
@@ -82,4 +89,16 @@ export function DrawControl(props: Props): JSX.Element {
 			/>
 		</FeatureGroup>
 	)
+}
+
+function extractCoordinates(jsonString: string): number[][][] {
+	const data: { geometry: { coordinates: number[][][] } } =
+		JSON.parse(jsonString)
+	const coordinates: number[][][] = data.geometry.coordinates
+
+	const modifiedCoordinates: number[][][] = coordinates.map(polygon =>
+		polygon.map(([longitude, latitude]) => [latitude, longitude])
+	)
+
+	return modifiedCoordinates
 }

@@ -26,6 +26,11 @@ import {
 	Select,
 	Spinner,
 	Input,
+	Table,
+	Tbody,
+	Tr,
+	Td,
+	TableContainer,
 	Text
 } from '@chakra-ui/react'
 import { useAccount } from 'wagmi'
@@ -35,6 +40,7 @@ import { MonitoringArea } from '@/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
 
 type Props = {
+	coordinates: number[][]
 	filtedProjects: MonitoringArea[]
 	isLoading: boolean
 	handlePage: React.Dispatch<React.SetStateAction<number>>
@@ -52,6 +58,7 @@ type Props = {
 
 export default function Menu(props: Props): JSX.Element {
 	const {
+		coordinates,
 		filtedProjects,
 		isLoading,
 		handlePage,
@@ -280,14 +287,43 @@ export default function Menu(props: Props): JSX.Element {
 															value={extensionAreaOption}
 															marginBottom={!form.errors.coordinates && 4}
 														>
-															<HStack spacing='24px'>
+															<HStack spacing='24px' marginBottom={4}>
 																<Radio value='Polygon'>
 																	<Text fontSize={14}>Polygon</Text>
 																</Radio>
+
 																<Radio value='Coordinates'>
 																	<Text fontSize={14}>Coordinates</Text>
 																</Radio>
 															</HStack>
+															<TableContainer mt={2} overflow='hidden'>
+																<Table size='sm'>
+																	<Tbody>
+																		{coordinates &&
+																			coordinates.length !== 0 &&
+																			coordinates[0].map(
+																				(
+																					coordinate: number[],
+																					index: number
+																				) => (
+																					<Tr key={index}>
+																						<Td
+																							fontWeight={'bold'}
+																							fontSize={'xs'}
+																						>
+																							{`${index + 1}. `}
+																						</Td>
+																						<Td display={'flex'} gap={3}>
+																							<Text>{`Lat: ${coordinate[0]}`}</Text>
+																							<Text>{`Lon: ${coordinate[1]}`}</Text>
+																						</Td>
+																					</Tr>
+																				)
+																			)}
+																	</Tbody>
+																</Table>
+															</TableContainer>
+															<Box></Box>
 														</RadioGroup>
 														<FormErrorMessage
 															marginBottom={form.errors.coordinates && 4}

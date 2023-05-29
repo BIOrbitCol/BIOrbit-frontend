@@ -9,11 +9,12 @@ import { DrawControl } from './DrawControl'
 import { useAccount } from 'wagmi'
 
 type Props = {
+	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
 	showDrawControl: boolean
 }
 
 export default function Map(props: Props): JSX.Element {
-	const { showDrawControl } = props
+	const { setCoordinates, showDrawControl } = props
 
 	return (
 		<>
@@ -27,7 +28,12 @@ export default function Map(props: Props): JSX.Element {
 					attribution='&copy; <a href="http://maps.stamen.com/#watercolor/12/37.7706/-122.3782">Stamen</a> Terrain Map'
 					url='https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg'
 				/>
-				{showDrawControl && <DrawControl showDrawControl={showDrawControl} />}
+				{showDrawControl && (
+					<DrawControl
+						setCoordinates={setCoordinates}
+						showDrawControl={showDrawControl}
+					/>
+				)}
 			</MapContainer>
 		</>
 	)

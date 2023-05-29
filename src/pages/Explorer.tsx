@@ -8,6 +8,7 @@ const MapWithNoSSR = dynamic(() => import('../components/Map'), { ssr: false })
 
 export default function Explorer(): JSX.Element {
 	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
+	const [coordinates, setCoordinates] = useState<number[][]>([])
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [page, setPage] = useState<number>(0)
 	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
@@ -32,6 +33,7 @@ export default function Explorer(): JSX.Element {
 		<>
 			<Wallet />
 			<Menu
+				coordinates={coordinates}
 				filtedProjects={filtedProjects}
 				isLoading={isLoading}
 				handlePage={setPage}
@@ -46,7 +48,10 @@ export default function Explorer(): JSX.Element {
 				setTotal={setTotal}
 				total={total}
 			/>
-			<MapWithNoSSR showDrawControl={showDrawControl} />
+			<MapWithNoSSR
+				setCoordinates={setCoordinates}
+				showDrawControl={showDrawControl}
+			/>
 		</>
 	)
 }
