@@ -6,6 +6,10 @@ export interface MonitoringArea {
 	extension: number
 	registry: string
 	country: string
+	coordinates: {
+		latitude: string
+		longitude: string
+	}
 	owner: string
 	url: string
 }

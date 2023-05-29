@@ -1,5 +1,7 @@
 import logo from '@/assets/images/brand.svg'
 import { SearchIcon } from '@chakra-ui/icons'
+import { Field, Form, Formik, FormikHelpers } from 'formik'
+import countriesJson from '../assets/json/countries.json'
 
 import Image from 'next/image'
 import {
@@ -7,15 +9,25 @@ import {
 	Button,
 	Center,
 	Flex,
+	FormControl,
+	FormLabel,
+	FormErrorMessage,
+	FormHelperText,
 	InputGroup,
 	InputRightElement,
+	HStack,
+	Radio,
+	RadioGroup,
 	Tabs,
 	TabList,
 	TabPanels,
 	Tab,
 	TabPanel,
+	Textarea,
+	Select,
 	Spinner,
-	Input
+	Input,
+	Text
 } from '@chakra-ui/react'
 import { useAccount } from 'wagmi'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
@@ -24,6 +36,7 @@ import { MonitoringArea } from '@/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
 
 type Props = {
+	filtedProjects: MonitoringArea[]
 	isLoading: boolean
 	handlePage: React.Dispatch<React.SetStateAction<number>>
 	handleSelect: React.Dispatch<React.SetStateAction<null>>
@@ -31,6 +44,7 @@ type Props = {
 	pageSize: number
 	projects: MonitoringArea[]
 	selectedId: null
+	setFiltedProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
 	setProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
 	setShowDrawControl: React.Dispatch<React.SetStateAction<boolean>>
 	setTotal: React.Dispatch<React.SetStateAction<number>>
@@ -39,6 +53,7 @@ type Props = {
 
 export default function Menu(props: Props): JSX.Element {
 	const {
+		filtedProjects,
 		isLoading,
 		handlePage,
 		handleSelect,
@@ -46,6 +61,7 @@ export default function Menu(props: Props): JSX.Element {
 		pageSize,
 		projects,
 		selectedId,
+		setFiltedProjects,
 		setProjects,
 		setShowDrawControl,
 		setTotal,
@@ -54,7 +70,6 @@ export default function Menu(props: Props): JSX.Element {
 
 	const { address } = useAccount()
 
-	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
 	const [enableSearcher, setEnableSearcher] = useState<boolean>(true)
 	const protectedAreasTabRef = useRef<HTMLButtonElement>(null)
 
@@ -76,8 +91,8 @@ export default function Menu(props: Props): JSX.Element {
 		)
 
 		if (filtered.length === 0) {
-			setFiltedProjects(projects)
-			setTotal(projects.length)
+			setFiltedProjects([])
+			setTotal(filtered.length)
 			return
 		}
 		setFiltedProjects(filtered)
@@ -164,11 +179,7 @@ export default function Menu(props: Props): JSX.Element {
 					<TabPanels overflowY='auto' maxH='77.9vh'>
 						<TabPanel padding={0}>
 							<>
-								{filtedProjects.length === 0 ? (
-									<Results projects={projects} />
-								) : (
-									<Results projects={filtedProjects} />
-								)}
+								{filtedProjects && <Results projects={filtedProjects} />}
 								{projects && projects.length && (
 									<ResultsPagination
 										page={page}
@@ -183,15 +194,166 @@ export default function Menu(props: Props): JSX.Element {
 							</>
 						</TabPanel>
 						<TabPanel>
-							<Center padding={3}>
-								{address && (
-									<Button colorScheme='blue'>Monitor protected area</Button>
-								)}
-							</Center>
+							{address && (
+								<Formik
+									initialValues={{
+										name: '',
+										description: '',
+										coordinates: [],
+										country: ''
+									}}
+									onSubmit={(values, actions) => {
+										setTimeout(() => {
+											alert(JSON.stringify(values, null, 2))
+											actions.setSubmitting(false)
+										}, 1000)
+									}}
+								>
+									{props => (
+										<Form>
+											<Field name='name' validate={validateName}>
+												{({ field, form }) => (
+													<FormControl
+														isInvalid={form.errors.name && form.touched.name}
+													>
+														<FormLabel fontSize={14}>Name</FormLabel>
+														<Input
+															{...field}
+															fontSize={12}
+															marginBottom={!form.errors.name && 4}
+															placeholder='Yellowstone National Park'
+														/>
+														<FormErrorMessage
+															marginBottom={form.errors.name && 4}
+														>
+															{form.errors.name}
+														</FormErrorMessage>
+													</FormControl>
+												)}
+											</Field>
+											<Field name='description' validate={validateDescription}>
+												{({ field, form }) => (
+													<FormControl
+														isInvalid={
+															form.errors.description &&
+															form.touched.description
+														}
+													>
+														<FormLabel fontSize={14}>Description</FormLabel>
+														<Textarea
+															{...field}
+															fontSize={12}
+															marginBottom={!form.errors.description && 4}
+															placeholder='Yellowstone National Park is a national park located...'
+														/>
+														<FormErrorMessage
+															marginBottom={form.errors.description && 4}
+														>
+															{form.errors.description}
+														</FormErrorMessage>
+													</FormControl>
+												)}
+											</Field>
+											<Field name='coordinates' validate={validateCoordinates}>
+												{({ field, form }) => (
+													<FormControl as='fieldset'>
+														<FormLabel as='legend' fontSize={14}>
+															Coordinates
+														</FormLabel>
+														<RadioGroup
+															defaultValue='Polygon'
+															marginBottom={!form.errors.coordinates && 4}
+														>
+															<HStack spacing='24px'>
+																<Radio value='Polygon'>
+																	<Text fontSize={14}>Polygon</Text>
+																</Radio>
+																<Radio value='Coordinates'>
+																	<Text fontSize={14}>Coordinates</Text>
+																</Radio>
+															</HStack>
+														</RadioGroup>
+														<FormErrorMessage
+															marginBottom={form.errors.coordinates && 4}
+														>
+															{form.errors.coordinates}
+														</FormErrorMessage>
+													</FormControl>
+												)}
+											</Field>
+											<Field name='country' validate={validateCountry}>
+												{({ field, form }) => (
+													<FormControl
+														isInvalid={
+															form.errors.country && form.touched.country
+														}
+													>
+														<FormLabel fontSize={14}>Country</FormLabel>
+														<Select
+															{...field}
+															placeholder='Select country'
+															fontSize={12}
+															marginBottom={!form.errors.country && 4}
+														>
+															{countriesJson.countries.map(country => (
+																<option key={country}>{country}</option>
+															))}
+														</Select>
+														<FormErrorMessage
+															marginBottom={form.errors.country && 4}
+														>
+															{form.errors.country}
+														</FormErrorMessage>
+													</FormControl>
+												)}
+											</Field>
+											<Button
+												colorScheme='blue'
+												isLoading={props.isSubmitting}
+												type='submit'
+											>
+												Submit
+											</Button>
+										</Form>
+									)}
+								</Formik>
+							)}
 						</TabPanel>
 					</TabPanels>
 				</Tabs>
 			)}
 		</Flex>
 	)
+}
+
+function validateName(value: string): string | undefined {
+	let error: string | undefined
+	if (!value) {
+		error = 'Protected name is required'
+	}
+	return error
+}
+
+function validateDescription(value: string): string | undefined {
+	let error: string | undefined
+	if (!value) {
+		error = 'Description is required'
+	}
+	return error
+}
+
+function validateCountry(value: string): string | undefined {
+	let error: string | undefined
+	if (!value) {
+		error = 'Country is required'
+	}
+	return error
+}
+
+function validateCoordinates(value: string): string | undefined {
+	let error: string | undefined
+	if (!value) {
+		error = 'Coordinates are required'
+	}
+	return error
 }

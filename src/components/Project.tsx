@@ -76,6 +76,14 @@ export function Project(props: Props): JSX.Element {
 						</Tr>
 						<Tr>
 							<Td fontWeight={'bold'} fontSize={'xs'}>
+								Coordinates
+							</Td>
+							<Td fontSize={'xs'}>
+								{project.coordinates.latitude} {project.coordinates.longitude}{' '}
+							</Td>
+						</Tr>
+						<Tr>
+							<Td fontWeight={'bold'} fontSize={'xs'}>
 								Country
 							</Td>
 							<Td fontSize={'xs'}>{project.country}</Td>

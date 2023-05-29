@@ -10,6 +10,7 @@ export default function Explorer(): JSX.Element {
 	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [page, setPage] = useState<number>(0)
+	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
 	const [projects, setProjects] = useState<MonitoringArea[]>([])
 	const [selectedId, setSelectedId] = useState(null) // lack typo
 	const [total, setTotal] = useState<number>(0)
@@ -21,6 +22,7 @@ export default function Explorer(): JSX.Element {
 			setIsLoading(true)
 			setTotal(monitoringAreas.length ? monitoringAreas.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
 			setProjects(monitoringAreas)
+			setFiltedProjects(monitoringAreas)
 			setSelectedId(null)
 			setIsLoading(false)
 		}, 3000)
@@ -30,6 +32,7 @@ export default function Explorer(): JSX.Element {
 		<>
 			<Wallet />
 			<Menu
+				filtedProjects={filtedProjects}
 				isLoading={isLoading}
 				handlePage={setPage}
 				handleSelect={setSelectedId}
@@ -37,6 +40,7 @@ export default function Explorer(): JSX.Element {
 				pageSize={pageSize}
 				projects={projects}
 				selectedId={selectedId}
+				setFiltedProjects={setFiltedProjects}
 				setProjects={setProjects}
 				setShowDrawControl={setShowDrawControl}
 				setTotal={setTotal}
@@ -57,6 +61,10 @@ const monitoringAreas: MonitoringArea[] = [
 		state: 'active',
 		registry: 'Opensea',
 		country: 'Colombia',
+		coordinates: {
+			latitude: '5.48333',
+			longitude: '-75.0667'
+		},
 		owner: '0xE8e1543235e6C35C656ef0b28526C61571583f4B',
 		url: 'www'
 	},
@@ -69,6 +77,10 @@ const monitoringAreas: MonitoringArea[] = [
 		state: 'monitor',
 		registry: 'Opensea',
 		country: 'Colombia',
+		coordinates: {
+			latitude: '5.48333',
+			longitude: '-75.0667'
+		},
 		owner: '0xE8e1543235e6C35C656ef0b28526C61571583f4B',
 		url: 'www'
 	},
@@ -81,6 +93,10 @@ const monitoringAreas: MonitoringArea[] = [
 		state: 'paused',
 		registry: 'Opensea',
 		country: 'Colombia',
+		coordinates: {
+			latitude: '5.48333',
+			longitude: '-75.0667'
+		},
 		owner: '0xE8e1543235e6C35C656ef0b28526C61571583f4B',
 		url: 'www'
 	},
@@ -93,6 +109,10 @@ const monitoringAreas: MonitoringArea[] = [
 		state: 'inactive',
 		registry: 'Opensea',
 		country: 'Colombia',
+		coordinates: {
+			latitude: '5.48333',
+			longitude: '-75.0667'
+		},
 		owner: '0xE8e1543235e6C35C656ef0b28526C61571583f4B',
 		url: 'www'
 	}
