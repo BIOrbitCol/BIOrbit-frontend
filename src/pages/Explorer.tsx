@@ -8,7 +8,9 @@ const MapWithNoSSR = dynamic(() => import('../components/Map'), { ssr: false })
 
 export default function Explorer(): JSX.Element {
 	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
-	const [coordinates, setCoordinates] = useState<number[][]>([])
+	const [coordinates, setCoordinates] = useState<
+		Array<Array<[number, number]>>
+	>([])
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [page, setPage] = useState<number>(0)
 	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])

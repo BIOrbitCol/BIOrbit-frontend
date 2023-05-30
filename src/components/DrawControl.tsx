@@ -10,7 +10,7 @@ type DrawEvent = {
 }
 
 type Props = {
-	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
+	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
 	showDrawControl: boolean
 }
 
@@ -20,7 +20,7 @@ export function DrawControl(props: Props): JSX.Element {
 	const featureGroupRef = useRef<L.FeatureGroup | null>(null)
 
 	const onCreated = (event: L.LeafletEvent): void => {
-		let coordinates: number[][] = []
+		let coordinates: [number, number][][] = []
 		const drawEvent: DrawEvent = event as unknown as DrawEvent
 		const layer: L.Layer = drawEvent.layer
 		const type: string = drawEvent.layerType
@@ -91,12 +91,12 @@ export function DrawControl(props: Props): JSX.Element {
 	)
 }
 
-function extractCoordinates(jsonString: string): number[][][] {
+function extractCoordinates(jsonString: string): [number, number][][] {
 	const data: { geometry: { coordinates: number[][][] } } =
 		JSON.parse(jsonString)
 	const coordinates: number[][][] = data.geometry.coordinates
 
-	const modifiedCoordinates: number[][][] = coordinates.map(polygon =>
+	const modifiedCoordinates: [number, number][][] = coordinates.map(polygon =>
 		polygon.map(([longitude, latitude]) => [latitude, longitude])
 	)
 

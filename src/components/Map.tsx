@@ -9,7 +9,7 @@ import { DrawControl } from './DrawControl'
 import { useAccount } from 'wagmi'
 
 type Props = {
-	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
+	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
 	showDrawControl: boolean
 }
 

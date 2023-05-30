@@ -40,7 +40,7 @@ import { MonitoringArea } from '@/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
 
 type Props = {
-	coordinates: number[][]
+	coordinates: number[][][]
 	filtedProjects: MonitoringArea[]
 	isLoading: boolean
 	handlePage: React.Dispatch<React.SetStateAction<number>>
@@ -234,7 +234,7 @@ export default function Menu(props: Props): JSX.Element {
 									{props => (
 										<Form>
 											<Field name='name' validate={validateName}>
-												{({ field, form }) => (
+												{({ field, form }: any) => (
 													<FormControl
 														isInvalid={form.errors.name && form.touched.name}
 													>
@@ -254,7 +254,7 @@ export default function Menu(props: Props): JSX.Element {
 												)}
 											</Field>
 											<Field name='description' validate={validateDescription}>
-												{({ field, form }) => (
+												{({ field, form }: any) => (
 													<FormControl
 														isInvalid={
 															form.errors.description &&
@@ -277,7 +277,7 @@ export default function Menu(props: Props): JSX.Element {
 												)}
 											</Field>
 											<Field name='coordinates' validate={validateCoordinates}>
-												{({ field, form }) => (
+												{({ field, form }: any) => (
 													<FormControl as='fieldset'>
 														<FormLabel as='legend' fontSize={14}>
 															Area extension
@@ -285,7 +285,7 @@ export default function Menu(props: Props): JSX.Element {
 														<RadioGroup
 															onChange={setExtensionAreaOption}
 															value={extensionAreaOption}
-															marginBottom={!form.errors.coordinates && 4}
+															marginBottom={!form.errors.coordinates ? 4 : 0}
 														>
 															<HStack spacing='24px' marginBottom={4}>
 																<Radio value='Polygon'>
@@ -300,12 +300,12 @@ export default function Menu(props: Props): JSX.Element {
 																<Table size='sm'>
 																	<Tbody>
 																		{coordinates &&
-																			coordinates.length !== 0 &&
-																			coordinates[0].map(
+																			coordinates[0]?.length !== 0 &&
+																			coordinates[0]?.map(
 																				(
 																					coordinate: number[],
 																					index: number
-																				) => (
+																				): JSX.Element => (
 																					<Tr key={index}>
 																						<Td
 																							fontWeight={'bold'}
@@ -334,7 +334,7 @@ export default function Menu(props: Props): JSX.Element {
 												)}
 											</Field>
 											<Field name='country' validate={validateCountry}>
-												{({ field, form }) => (
+												{({ field, form }: any) => (
 													<FormControl
 														isInvalid={
 															form.errors.country && form.touched.country
