@@ -179,12 +179,22 @@ export default function Menu(props: Props): JSX.Element {
 			<>
 				{coordinates.length === 0 && (
 					<>
-						{form.setFieldError(
-							'coordinates',
-							'Please add at least one coordinate'
-						)}
+						{form.setFieldError('coordinates', 'Coordinates are required')}
+
 						<ErrorMessage name='coordinates'>
-							{msg => <ErrorText>{msg}</ErrorText>}
+							{msg => (
+								<ErrorText>
+									<Box
+										marginTop={'8px'}
+										marginBottom={'16px'}
+										height={'17px'}
+										fontSize={'14px'}
+										color={'#E53E3E'}
+									>
+										{msg}
+									</Box>
+								</ErrorText>
+							)}
 						</ErrorMessage>
 					</>
 				)}
@@ -313,10 +323,14 @@ export default function Menu(props: Props): JSX.Element {
 										country: ''
 									}}
 									onSubmit={(values, actions) => {
-										setTimeout(() => {
-											alert(JSON.stringify(values, null, 2))
+										if (coordinates.length !== 0) {
+											setTimeout(() => {
+												alert(JSON.stringify(values, null, 2))
+												actions.setSubmitting(false)
+											}, 1000)
+										} else {
 											actions.setSubmitting(false)
-										}, 1000)
+										}
 									}}
 								>
 									{props => (
@@ -444,6 +458,7 @@ export default function Menu(props: Props): JSX.Element {
 													</FormControl>
 												)}
 											</Field>
+
 											<Button
 												colorScheme='blue'
 												isLoading={props.isSubmitting}
