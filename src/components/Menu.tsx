@@ -171,7 +171,7 @@ export default function Menu(props: Props): JSX.Element {
 				coordinates[0].length !== 0 &&
 				coordinates[0][0].length !== 0
 			) {
-				push(coordinates)
+				form.setFieldValue('coordinates', coordinates)
 			}
 		}, [coordinates])
 
