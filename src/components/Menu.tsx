@@ -6,9 +6,10 @@ import {
 	FieldArray,
 	Form,
 	Formik,
-	FormikProps,
-	FormikErrors,
 	FieldArrayRenderProps,
+	FormikErrors,
+	FormikHelpers,
+	FormikProps,
 	useFormikContext
 } from 'formik'
 import countriesJson from '../assets/json/countries.json'
@@ -322,8 +323,25 @@ export default function Menu(props: Props): JSX.Element {
 										coordinates: [],
 										country: ''
 									}}
-									onSubmit={(values, actions) => {
+									onSubmit={(
+										values: {
+											name: string
+											description: string
+											coordinates: never[]
+											country: string
+										},
+										actions: FormikHelpers<{
+											name: string
+											description: string
+											coordinates: never[]
+											country: string
+										}>
+									) => {
 										if (coordinates.length !== 0) {
+											const extension: number =
+												calculateEarthPolygonArea(coordinates)
+
+											console.log('extension: ', extension)
 											setTimeout(() => {
 												alert(JSON.stringify(values, null, 2))
 												actions.setSubmitting(false)
@@ -502,10 +520,26 @@ function validateCountry(value: string): string | undefined {
 	return error
 }
 
-function validateCoordinates(value: number[][][]): string | undefined {
-	let error: string | undefined
-	if (!value) {
-		error = 'Coordinates are required'
+function calculateEarthPolygonArea(coordinates: number[][][]): number {
+	const R: number = 6371 // Radius of the Earth in kilometers
+	const degreeToRadian: number = Math.PI / 180 // Conversion factor for degrees to radians
+
+	const points: number[][] = coordinates // Flatten the coordinates array and convert to radians
+		.flat()
+		.map(coord => [coord[0] * degreeToRadian, coord[1] * degreeToRadian])
+
+	let total: number = 0
+	const len: number = points.length
+
+	for (let i = 0; i < len; i++) {
+		let p1: number[] = points[i]
+		let p2: number[] = points[(i + 1) % len]
+
+		total += (p2[1] - p1[1]) * (2 + Math.sin(p1[0]) + Math.sin(p2[0]))
 	}
-	return error
+
+	const areaInSquareKilometers: number = Math.abs((total * R * R) / 2)
+	const areaInHectares: number = areaInSquareKilometers * 100 // convert square kilometers to hectares
+
+	return Math.floor(areaInHectares) // round down to the nearest whole number
 }
