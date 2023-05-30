@@ -1,6 +1,16 @@
 import logo from '@/assets/images/brand.svg'
 import { SearchIcon } from '@chakra-ui/icons'
-import { Field, Form, Formik } from 'formik'
+import {
+	ErrorMessage,
+	Field,
+	FieldArray,
+	Form,
+	Formik,
+	FormikProps,
+	FormikErrors,
+	FieldArrayRenderProps,
+	useFormikContext
+} from 'formik'
 import countriesJson from '../assets/json/countries.json'
 
 import Image from 'next/image'
@@ -35,9 +45,18 @@ import {
 } from '@chakra-ui/react'
 import { useAccount } from 'wagmi'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { ReactNode } from 'react'
+import { FeatureGroup } from 'react-leaflet'
+import * as L from 'leaflet'
 import { Results } from './Results'
 import { MonitoringArea } from '@/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
+
+type CoordinatesFieldArrayProps = {
+	coordinates: number[][][]
+	push: FieldArrayRenderProps['push']
+	form: FormikProps<any>
+}
 
 type Props = {
 	coordinates: number[][][]
@@ -47,8 +66,10 @@ type Props = {
 	handleSelect: React.Dispatch<React.SetStateAction<null>>
 	page: number
 	pageSize: number
+	polygonRef: React.MutableRefObject<L.FeatureGroup | null> // Modify the type here
 	projects: MonitoringArea[]
 	selectedId: null
+	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
 	setFiltedProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
 	setProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
 	setShowDrawControl: React.Dispatch<React.SetStateAction<boolean>>
@@ -65,8 +86,10 @@ export default function Menu(props: Props): JSX.Element {
 		handleSelect,
 		page,
 		pageSize,
+		polygonRef,
 		projects,
 		selectedId,
+		setCoordinates,
 		setFiltedProjects,
 		setProjects,
 		setShowDrawControl,
@@ -85,7 +108,7 @@ export default function Menu(props: Props): JSX.Element {
 		if (extensionAreaOption === 'Polygon') {
 			setShowDrawControl(true)
 		}
-		//setEnableSearcher(false)
+		setEnableSearcher(false)
 	}
 
 	const onProtectedAreasTab = (): void => {
@@ -93,7 +116,7 @@ export default function Menu(props: Props): JSX.Element {
 		setEnableSearcher(true)
 	}
 
-	const searchProject = (event: ChangeEvent<HTMLInputElement>) => {
+	const searchProject = (event: ChangeEvent<HTMLInputElement>): void => {
 		const inputValue: string = event.target.value
 		const filtered: MonitoringArea[] = projects.filter(
 			(project: MonitoringArea) =>
@@ -109,12 +132,77 @@ export default function Menu(props: Props): JSX.Element {
 		setTotal(filtered.length)
 	}
 
+	function CoordinatesFieldArrayWrapper({
+		coordinates
+	}: {
+		coordinates: number[][][]
+	}): JSX.Element {
+		const formik = useFormikContext()
+
+		return (
+			<FieldArray name='coordinates'>
+				{({ push }) => (
+					<CoordinatesFieldArray
+						coordinates={coordinates}
+						push={push}
+						form={formik}
+					/>
+				)}
+			</FieldArray>
+		)
+	}
+
+	const ErrorText: React.FunctionComponent<{ children?: React.ReactNode }> = ({
+		children
+	}): JSX.Element => (
+		<Text className='error' marginBottom={4}>
+			{children}
+		</Text>
+	)
+
+	function CoordinatesFieldArray({
+		coordinates,
+		push,
+		form
+	}: CoordinatesFieldArrayProps): JSX.Element {
+		useEffect(() => {
+			if (
+				coordinates.length !== 0 &&
+				coordinates[0].length !== 0 &&
+				coordinates[0][0].length !== 0
+			) {
+				push(coordinates)
+			}
+		}, [coordinates])
+
+		return (
+			<>
+				{coordinates.length === 0 && (
+					<>
+						{form.setFieldError(
+							'coordinates',
+							'Please add at least one coordinate'
+						)}
+						<ErrorMessage name='coordinates'>
+							{msg => <ErrorText>{msg}</ErrorText>}
+						</ErrorMessage>
+					</>
+				)}
+			</>
+		)
+	}
+
 	useEffect(() => {
 		if (extensionAreaOption === 'Polygon') {
 			setShowDrawControl(true)
-		} /*else {
+		} else {
 			setShowDrawControl(false)
-		}*/
+			setCoordinates([])
+			setShowDrawControl(false)
+			if (polygonRef.current) {
+				polygonRef.current.clearLayers()
+			}
+		}
 	}, [extensionAreaOption])
 
 	useEffect(() => {
@@ -276,63 +364,60 @@ export default function Menu(props: Props): JSX.Element {
 													</FormControl>
 												)}
 											</Field>
-											<Field name='coordinates' validate={validateCoordinates}>
-												{({ field, form }: any) => (
-													<FormControl as='fieldset'>
-														<FormLabel as='legend' fontSize={14}>
-															Area extension
-														</FormLabel>
-														<RadioGroup
-															onChange={setExtensionAreaOption}
-															value={extensionAreaOption}
-															marginBottom={!form.errors.coordinates ? 4 : 0}
-														>
-															<HStack spacing='24px' marginBottom={4}>
-																<Radio value='Polygon'>
-																	<Text fontSize={14}>Polygon</Text>
-																</Radio>
+											<FormControl as='fieldset'>
+												<FormLabel as='legend' fontSize={14}>
+													Area extension
+												</FormLabel>
+												<RadioGroup
+													marginBottom={2}
+													onChange={setExtensionAreaOption}
+													value={extensionAreaOption}
+												>
+													<HStack spacing='24px'>
+														<Radio value='Polygon'>
+															<Text fontSize={14}>Polygon</Text>
+														</Radio>
 
-																<Radio value='Coordinates'>
-																	<Text fontSize={14}>Coordinates</Text>
-																</Radio>
-															</HStack>
-															<TableContainer mt={2} overflow='hidden'>
-																<Table size='sm'>
-																	<Tbody>
-																		{coordinates &&
-																			coordinates[0]?.length !== 0 &&
-																			coordinates[0]?.map(
-																				(
-																					coordinate: number[],
-																					index: number
-																				): JSX.Element => (
-																					<Tr key={index}>
-																						<Td
-																							fontWeight={'bold'}
-																							fontSize={'xs'}
-																						>
-																							{`${index + 1}. `}
-																						</Td>
-																						<Td display={'flex'} gap={3}>
-																							<Text>{`Lat: ${coordinate[0]}`}</Text>
-																							<Text>{`Lon: ${coordinate[1]}`}</Text>
-																						</Td>
-																					</Tr>
-																				)
-																			)}
-																	</Tbody>
-																</Table>
-															</TableContainer>
-															<Box></Box>
-														</RadioGroup>
-														<FormErrorMessage
-															marginBottom={form.errors.coordinates && 4}
-														>
-															{form.errors.coordinates}
-														</FormErrorMessage>
-													</FormControl>
-												)}
-											</Field>
+														<Radio value='Coordinates'>
+															<Text fontSize={14}>Coordinates</Text>
+														</Radio>
+													</HStack>
+												</RadioGroup>
+												{coordinates?.length !== 0 &&
+													coordinates[0]?.length !== 0 &&
+													coordinates[0][0]?.length !== 0 && (
+														<TableContainer mt={2} overflow='hidden'>
+															<Table size='sm' marginBottom={2}>
+																<Tbody>
+																	{coordinates &&
+																		coordinates[0]?.length !== 0 &&
+																		coordinates[0]?.map(
+																			(
+																				coordinate: number[],
+																				index: number
+																			): JSX.Element => (
+																				<Tr key={index}>
+																					<Td
+																						fontWeight={'bold'}
+																						fontSize={'xs'}
+																					>
+																						{`${index + 1}. `}
+																					</Td>
+																					<Td display={'flex'} gap={3}>
+																						<Text>{`Lat: ${coordinate[0]}`}</Text>
+																						<Text>{`Lon: ${coordinate[1]}`}</Text>
+																					</Td>
+																				</Tr>
+																			)
+																		)}
+																</Tbody>
+															</Table>
+														</TableContainer>
+													)}
+												<CoordinatesFieldArrayWrapper
+													coordinates={coordinates}
+												/>
+											</FormControl>
 											<Field name='country' validate={validateCountry}>
 												{({ field, form }: any) => (
 													<FormControl
@@ -402,7 +487,7 @@ function validateCountry(value: string): string | undefined {
 	return error
 }
 
-function validateCoordinates(value: string): string | undefined {
+function validateCoordinates(value: number[][][]): string | undefined {
 	let error: string | undefined
 	if (!value) {
 		error = 'Coordinates are required'

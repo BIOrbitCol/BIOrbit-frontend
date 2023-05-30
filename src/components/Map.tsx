@@ -7,14 +7,17 @@ import style from '../styles/Map.module.css'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import { DrawControl } from './DrawControl'
 import { useAccount } from 'wagmi'
+import { FeatureGroup } from 'react-leaflet'
+import * as L from 'leaflet'
 
 type Props = {
+	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
 	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
 	showDrawControl: boolean
 }
 
 export default function Map(props: Props): JSX.Element {
-	const { setCoordinates, showDrawControl } = props
+	const { polygonRef, setCoordinates, showDrawControl } = props
 
 	return (
 		<>
@@ -28,12 +31,12 @@ export default function Map(props: Props): JSX.Element {
 					attribution='&copy; <a href="http://maps.stamen.com/#watercolor/12/37.7706/-122.3782">Stamen</a> Terrain Map'
 					url='https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg'
 				/>
-				{showDrawControl && (
-					<DrawControl
-						setCoordinates={setCoordinates}
-						showDrawControl={showDrawControl}
-					/>
-				)}
+
+				<DrawControl
+					polygonRef={polygonRef}
+					setCoordinates={setCoordinates}
+					showDrawControl={showDrawControl}
+				/>
 			</MapContainer>
 		</>
 	)

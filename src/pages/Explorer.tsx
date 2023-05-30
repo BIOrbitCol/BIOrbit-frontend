@@ -2,21 +2,24 @@ import Menu from '@/components/Menu'
 import Wallet from '@/components/Wallet'
 import { MonitoringArea } from '@/models/monitoring-area.model'
 import dynamic from 'next/dynamic'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import * as L from 'leaflet'
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), { ssr: false })
 
 export default function Explorer(): JSX.Element {
-	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
 	const [coordinates, setCoordinates] = useState<
 		Array<Array<[number, number]>>
 	>([])
+	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [page, setPage] = useState<number>(0)
-	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
 	const [projects, setProjects] = useState<MonitoringArea[]>([])
 	const [selectedId, setSelectedId] = useState(null) // lack typo
+	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
 	const [total, setTotal] = useState<number>(0)
+
+	const polygonRef = useRef<L.FeatureGroup | null>(null)
 
 	const pageSize: number = 50 // date hardcored
 
@@ -42,8 +45,10 @@ export default function Explorer(): JSX.Element {
 				handleSelect={setSelectedId}
 				page={page}
 				pageSize={pageSize}
+				polygonRef={polygonRef}
 				projects={projects}
 				selectedId={selectedId}
+				setCoordinates={setCoordinates}
 				setFiltedProjects={setFiltedProjects}
 				setProjects={setProjects}
 				setShowDrawControl={setShowDrawControl}
@@ -51,6 +56,7 @@ export default function Explorer(): JSX.Element {
 				total={total}
 			/>
 			<MapWithNoSSR
+				polygonRef={polygonRef}
 				setCoordinates={setCoordinates}
 				showDrawControl={showDrawControl}
 			/>

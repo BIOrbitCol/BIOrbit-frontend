@@ -1,5 +1,5 @@
 import * as L from 'leaflet'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { FeatureGroup } from 'react-leaflet'
 import { EditControl } from 'react-leaflet-draw'
 
@@ -10,15 +10,13 @@ type DrawEvent = {
 }
 
 type Props = {
+	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
 	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
 	showDrawControl: boolean
 }
 
 export function DrawControl(props: Props): JSX.Element {
-	const { setCoordinates, showDrawControl } = props
-
-	const featureGroupRef = useRef<L.FeatureGroup | null>(null)
-	const editControlRef = useRef<EditControl | null>(null)
+	const { polygonRef, setCoordinates, showDrawControl } = props
 
 	const onCreated = (event: L.LeafletEvent): void => {
 		let coordinates: [number, number][][] = []
@@ -73,34 +71,35 @@ export function DrawControl(props: Props): JSX.Element {
 	}
 
 	const onDeleted = (event: L.LeafletEvent): void => {
-		if (featureGroupRef.current) {
-			featureGroupRef.current.clearLayers()
+		if (polygonRef.current) {
+			polygonRef.current?.clearLayers()
 			setCoordinates([])
 		}
 	}
 
 	useEffect(() => {
-		if (!showDrawControl && featureGroupRef.current) {
-			featureGroupRef.current.clearLayers()
+		if (!showDrawControl && polygonRef.current) {
+			// polygonRef.current.clearLayers()
 		}
 	}, [showDrawControl])
 
 	return (
-		<FeatureGroup ref={featureGroupRef}>
-			<EditControl
-				ref={editControlRef}
-				position='topleft'
-				draw={{
-					circle: false,
-					circlemarker: false,
-					marker: false,
-					rectangle: false,
-					polyline: false
-				}}
-				onCreated={onCreated}
-				onEdited={onEdited}
-				onDeleted={onDeleted}
-			/>
+		<FeatureGroup ref={polygonRef}>
+			{showDrawControl && (
+				<EditControl
+					position='topleft'
+					draw={{
+						circle: false,
+						circlemarker: false,
+						marker: false,
+						rectangle: false,
+						polyline: false
+					}}
+					onCreated={onCreated}
+					onEdited={onEdited}
+					onDeleted={onDeleted}
+				/>
+			)}
 		</FeatureGroup>
 	)
 }
