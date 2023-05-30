@@ -18,6 +18,7 @@ export function DrawControl(props: Props): JSX.Element {
 	const { setCoordinates, showDrawControl } = props
 
 	const featureGroupRef = useRef<L.FeatureGroup | null>(null)
+	const editControlRef = useRef<EditControl | null>(null)
 
 	const onCreated = (event: L.LeafletEvent): void => {
 		let coordinates: [number, number][][] = []
@@ -35,13 +36,13 @@ export function DrawControl(props: Props): JSX.Element {
 			layer.bindPopup(`<p>${JSON.stringify(layer.toGeoJSON())}<p>`)
 			if (coordinates.length === 0) {
 				coordinates = extractCoordinates(JSON.stringify(layer.toGeoJSON()))
-				console.log(coordinates)
 				setCoordinates(coordinates)
 			}
 		}
 	}
 
 	const onEdited = (event: L.LeafletEvent): void => {
+		let coordinates: [number, number][][] = []
 		const drawEvent: DrawEvent = event as unknown as DrawEvent
 		const target = event.target as L.FeatureGroup
 		const layers: L.Layer[] = []
@@ -63,8 +64,19 @@ export function DrawControl(props: Props): JSX.Element {
 				layer.bindPopup(
 					`coordinates: <p>${JSON.stringify(layer.toGeoJSON())}<p>`
 				)
+				if (coordinates.length === 0) {
+					coordinates = extractCoordinates(JSON.stringify(layer.toGeoJSON()))
+					setCoordinates(coordinates)
+				}
 			}
 		})
+	}
+
+	const onDeleted = (event: L.LeafletEvent): void => {
+		if (featureGroupRef.current) {
+			featureGroupRef.current.clearLayers()
+			setCoordinates([])
+		}
 	}
 
 	useEffect(() => {
@@ -76,6 +88,7 @@ export function DrawControl(props: Props): JSX.Element {
 	return (
 		<FeatureGroup ref={featureGroupRef}>
 			<EditControl
+				ref={editControlRef}
 				position='topleft'
 				draw={{
 					circle: false,
@@ -86,6 +99,7 @@ export function DrawControl(props: Props): JSX.Element {
 				}}
 				onCreated={onCreated}
 				onEdited={onEdited}
+				onDeleted={onDeleted}
 			/>
 		</FeatureGroup>
 	)

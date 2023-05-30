@@ -85,7 +85,7 @@ export default function Menu(props: Props): JSX.Element {
 		if (extensionAreaOption === 'Polygon') {
 			setShowDrawControl(true)
 		}
-		setEnableSearcher(false)
+		//setEnableSearcher(false)
 	}
 
 	const onProtectedAreasTab = (): void => {
@@ -112,9 +112,9 @@ export default function Menu(props: Props): JSX.Element {
 	useEffect(() => {
 		if (extensionAreaOption === 'Polygon') {
 			setShowDrawControl(true)
-		} else {
+		} /*else {
 			setShowDrawControl(false)
-		}
+		}*/
 	}, [extensionAreaOption])
 
 	useEffect(() => {
