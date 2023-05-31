@@ -13,7 +13,7 @@ Prerequisites: [Node (v16 LTS)](https://nodejs.org/en/download/) and [Git](https
 > Clone the repository:
 
 ```
-git clone https://github.com/salviega/EVMOS-Explorer.git
+git clone https://github.com/BIOrbitCol/BIOrbit-frontend.git
 ```
 
 > Install dependencies:
@@ -31,5 +31,3 @@ yarn dev
 ## Authors 🏗
 
 [salviega](https://github.com/salviega)
-
-[sheva323](https://github.com/sheva323)
