@@ -4,10 +4,14 @@ import { MonitoringArea } from '@/models/monitoring-area.model'
 import dynamic from 'next/dynamic'
 import React, { useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
+import { Contract, ethers } from 'ethers'
+import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
+import { useAccount, useContractRead } from 'wagmi'
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), { ssr: false })
 
 export default function Explorer(): JSX.Element {
+	const [biorbitContract, setBiorbitContract] = useState<Contract | null>(null)
 	const [coordinates, setCoordinates] = useState<
 		Array<Array<[number, number]>>
 	>([])
@@ -23,16 +27,33 @@ export default function Explorer(): JSX.Element {
 
 	const pageSize: number = 50 // date hardcored
 
+	const { address } = useAccount()
+
+	const { data: biorbitProjects, isError } = useContractRead({
+		address: `0x${BIOrbitContractJson.address.substring(2)}`,
+		abi: BIOrbitContractJson.abi,
+		functionName: 'getProjectsByOwner'
+	})
+
+	const fetchData = async () => {
+		setIsLoading(true)
+
+		if (Array.isArray(biorbitProjects)) {
+			setProjects(biorbitProjects)
+			setFiltedProjects(biorbitProjects)
+			setTotal(biorbitProjects.length ? biorbitProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
+		}
+		setSelectedId(null)
+		setIsLoading(false)
+	}
+
 	useEffect(() => {
-		setTimeout(() => {
-			setIsLoading(true)
-			setTotal(monitoringAreas.length ? monitoringAreas.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
-			setProjects(monitoringAreas)
-			setFiltedProjects(monitoringAreas)
-			setSelectedId(null)
-			setIsLoading(false)
-		}, 3000)
-	}, [page])
+		if (address) {
+			fetchData()
+			return
+		}
+		setIsLoading(false)
+	}, [page, address])
 
 	return (
 		<>
@@ -63,70 +84,3 @@ export default function Explorer(): JSX.Element {
 		</>
 	)
 }
-
-const monitoringAreas: MonitoringArea[] = [
-	{
-		id: 0,
-		name: 'Parque Selva de Florencia',
-		extension: 500,
-		description:
-			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
-		state: 'active',
-		registry: 'Opensea',
-		country: 'Colombia',
-		coordinates: {
-			latitude: '5.48333',
-			longitude: '-75.0667'
-		},
-		owner: '0xE8e1543235e6C35C656ef0b28526C61571583f4B',
-		url: 'www'
-	},
-	{
-		id: 1,
-		name: 'Parque Selva de Caquetá',
-		extension: 500,
-		description:
-			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
-		state: 'monitor',
-		registry: 'Opensea',
-		country: 'Colombia',
-		coordinates: {
-			latitude: '5.48333',
-			longitude: '-75.0667'
-		},
-		owner: '0xE8e1543235e6C35C656ef0b28526C61571583f4B',
-		url: 'www'
-	},
-	{
-		id: 2,
-		name: 'Parque Selva de Lomas',
-		extension: 500,
-		description:
-			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
-		state: 'paused',
-		registry: 'Opensea',
-		country: 'Colombia',
-		coordinates: {
-			latitude: '5.48333',
-			longitude: '-75.0667'
-		},
-		owner: '0xE8e1543235e6C35C656ef0b28526C61571583f4B',
-		url: 'www'
-	},
-	{
-		id: 3,
-		name: 'Parque Selva de Bahía',
-		extension: 500,
-		description:
-			'bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla, bla',
-		state: 'inactive',
-		registry: 'Opensea',
-		country: 'Colombia',
-		coordinates: {
-			latitude: '5.48333',
-			longitude: '-75.0667'
-		},
-		owner: '0xE8e1543235e6C35C656ef0b28526C61571583f4B',
-		url: 'www'
-	}
-]

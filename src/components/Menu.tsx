@@ -301,7 +301,7 @@ export default function Menu(props: Props): JSX.Element {
 						<TabPanel padding={0}>
 							<>
 								{filtedProjects && <Results projects={filtedProjects} />}
-								{projects && projects.length && (
+								{projects && projects.length > 0 && (
 									<ResultsPagination
 										page={page}
 										pageSize={pageSize}
