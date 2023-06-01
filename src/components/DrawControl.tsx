@@ -34,6 +34,7 @@ export function DrawControl(props: Props): JSX.Element {
 			layer.bindPopup(`<p>${JSON.stringify(layer.toGeoJSON())}<p>`)
 			if (coordinates.length === 0) {
 				coordinates = extractCoordinates(JSON.stringify(layer.toGeoJSON()))
+				console.log('coordinates: ', coordinates)
 				setCoordinates(coordinates)
 			}
 		}

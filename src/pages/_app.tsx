@@ -9,7 +9,13 @@ import {
 } from '@rainbow-me/rainbowkit'
 import type { AppProps } from 'next/app'
 import { configureChains, createConfig, WagmiConfig } from 'wagmi'
-import { celo, polygon, celoAlfajores, polygonMumbai } from 'wagmi/chains'
+import {
+	celo,
+	polygon,
+	celoAlfajores,
+	polygonMumbai,
+	localhost
+} from 'wagmi/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { ChakraProvider } from '@chakra-ui/react'
 
@@ -20,7 +26,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 			: []),
 
 		...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true'
-			? [polygonMumbai, celoAlfajores]
+			? [celoAlfajores, localhost, polygonMumbai]
 			: [])
 	],
 	[publicProvider()]
