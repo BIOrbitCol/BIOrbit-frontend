@@ -37,7 +37,9 @@ export default function Explorer(): JSX.Element {
 	const fetchData = async () => {
 		setIsLoading(true)
 
-		const provider = new ethers.providers.Web3Provider(window.ethereum)
+		const ethereum = (window as any).ethereum
+
+		const provider = new ethers.providers.Web3Provider(ethereum)
 		await provider.send('eth_requestAccounts', [])
 		const signer = provider.getSigner()
 

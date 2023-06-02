@@ -17,7 +17,7 @@ import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { useEffect, useRef } from 'react'
 import ReactReadMoreReadLess from 'react-read-more-read-less'
 
-interface coordinates {
+interface Coordinates {
 	latitude: string
 	longitude: string
 }
@@ -32,7 +32,7 @@ export function Project(props: Props): JSX.Element {
 	const elRef = useRef(null)
 	const selectedId = 0
 
-	const coordinates: coordinates = getLastCoordinates(project.footprint)
+	const coordinates: Coordinates = getLastCoordinates(project.footprint)
 
 	//Effect called when selectedId updates
 	useEffect(() => {}, [selectedId])
@@ -179,7 +179,7 @@ function getTagComponent(state: number): JSX.Element {
 	}
 }
 
-function getLastCoordinates(footprint: Footprint[][]): coordinates {
+function getLastCoordinates(footprint: Footprint[][]): Coordinates {
 	if (footprint.length === 0) {
 		return { latitude: '0', longitude: '0' }
 	}
@@ -190,10 +190,6 @@ function getLastCoordinates(footprint: Footprint[][]): coordinates {
 	}
 
 	const lastLevel2 = lastLevel1[lastLevel1.length - 1]
-	if (lastLevel2.length === 0) {
-		return { latitude: '0', longitude: '0' }
-	}
-
 	return {
 		latitude: lastLevel2.latitude,
 		longitude: lastLevel2.longitude

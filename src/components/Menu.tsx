@@ -112,7 +112,7 @@ export default function Menu(props: Props): JSX.Element {
 		address: `0x${BIOrbitContractJson.address.substring(2)}`,
 		abi: BIOrbitContractJson.abi,
 		functionName: 'mintProject',
-		gas: 1_000_000n
+		gas: BigInt(1000000)
 	})
 
 	const onMonitorTab = (): void => {
@@ -352,7 +352,7 @@ export default function Menu(props: Props): JSX.Element {
 												const extension: string =
 													calculateEarthPolygonArea(coordinates)
 
-												const footprint: string[][] =
+												const footprint: string[][][] =
 													convertArrayToString(coordinates)
 
 												console.log('footprint: ', footprint)
@@ -364,8 +364,7 @@ export default function Menu(props: Props): JSX.Element {
 														extension,
 														footprint,
 														values.country
-													],
-													from: `0x${address.substring(2)}`
+													]
 												})
 												actions.setSubmitting(false)
 											}, 1000)
@@ -567,7 +566,7 @@ function calculateEarthPolygonArea(coordinates: number[][][]): string {
 	return areaInHectares.toString() // round down to the nearest whole number
 }
 
-function convertToString(arr: number[][][]): string[][][] {
+function convertArrayToString(arr: number[][][]): string[][][] {
 	return arr.map(innerArray =>
 		innerArray.map(pair => pair.map(num => num.toString()))
 	)
