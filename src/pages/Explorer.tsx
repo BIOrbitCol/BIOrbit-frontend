@@ -51,8 +51,6 @@ export default function Explorer(): JSX.Element {
 			await biorbitContract.getProjectsByOwner()
 		)
 
-		console.log(biorbitProjects)
-
 		if (Array.isArray(biorbitProjects)) {
 			setProjects(biorbitProjects)
 			setFiltedProjects(biorbitProjects)
@@ -108,7 +106,7 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 			state,
 			name,
 			description,
-			extension,
+			extensionData,
 			footprintData,
 			country,
 			owner,
@@ -117,6 +115,8 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 		] = item
 
 		const id: number = parseInt(idData)
+		let extension: number | string = parseFloat(extensionData)
+		extension = extension.toFixed(2)
 		const footprint: Footprint[][] = footprintData.map((coordinate: string[]) =>
 			coordinate.map(coord => {
 				const [latitude, longitude] = coord.split(',')
