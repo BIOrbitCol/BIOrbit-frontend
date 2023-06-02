@@ -52,6 +52,9 @@ import * as L from 'leaflet'
 import { Results } from './Results'
 import { MonitoringArea } from '@/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
+import { useContractWrite } from 'wagmi'
+import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
+import { parseEther } from 'ethers/lib/utils'
 
 type CoordinatesFieldArrayProps = {
 	coordinates: number[][][]
@@ -104,6 +107,13 @@ export default function Menu(props: Props): JSX.Element {
 	const [extensionAreaOption, setExtensionAreaOption] =
 		useState<string>('Polygon')
 	const protectedAreasTabRef = useRef<HTMLButtonElement>(null)
+
+	const { write: onMintProject } = useContractWrite({
+		address: `0x${BIOrbitContractJson.address.substring(2)}`,
+		abi: BIOrbitContractJson.abi,
+		functionName: 'mintProject',
+		gas: 1_000_000n
+	})
 
 	const onMonitorTab = (): void => {
 		if (extensionAreaOption === 'Polygon') {
@@ -338,12 +348,25 @@ export default function Menu(props: Props): JSX.Element {
 										}>
 									) => {
 										if (coordinates.length !== 0) {
-											const extension: number =
-												calculateEarthPolygonArea(coordinates)
-
-											console.log('extension: ', extension)
 											setTimeout(() => {
-												alert(JSON.stringify(values, null, 2))
+												const extension: string =
+													calculateEarthPolygonArea(coordinates)
+
+												const footprint: string[][] =
+													convertArrayToString(coordinates)
+
+												console.log('footprint: ', footprint)
+
+												onMintProject({
+													args: [
+														values.name,
+														values.description,
+														extension,
+														footprint,
+														values.country
+													],
+													from: `0x${address.substring(2)}`
+												})
 												actions.setSubmitting(false)
 											}, 1000)
 										} else {
@@ -520,7 +543,7 @@ function validateCountry(value: string): string | undefined {
 	return error
 }
 
-function calculateEarthPolygonArea(coordinates: number[][][]): number {
+function calculateEarthPolygonArea(coordinates: number[][][]): string {
 	const R: number = 6371 // Radius of the Earth in kilometers
 	const degreeToRadian: number = Math.PI / 180 // Conversion factor for degrees to radians
 
@@ -541,5 +564,11 @@ function calculateEarthPolygonArea(coordinates: number[][][]): number {
 	const areaInSquareKilometers: number = Math.abs((total * R * R) / 2)
 	const areaInHectares: number = areaInSquareKilometers * 100 // convert square kilometers to hectares
 
-	return Math.floor(areaInHectares) // round down to the nearest whole number
+	return areaInHectares.toString() // round down to the nearest whole number
+}
+
+function convertToString(arr: number[][][]): string[][][] {
+	return arr.map(innerArray =>
+		innerArray.map(pair => pair.map(num => num.toString()))
+	)
 }

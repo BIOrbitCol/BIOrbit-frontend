@@ -1,17 +1,21 @@
 import Menu from '@/components/Menu'
 import Wallet from '@/components/Wallet'
-import { MonitoringArea } from '@/models/monitoring-area.model'
+import {
+	Footprint,
+	ImageTimeSeries,
+	Monitoring,
+	MonitoringArea
+} from '@/models/monitoring-area.model'
 import dynamic from 'next/dynamic'
 import React, { useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
 import { Contract, ethers } from 'ethers'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
-import { useAccount, useContractRead } from 'wagmi'
+import { useAccount, useContractRead, useWalletClient } from 'wagmi'
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), { ssr: false })
 
 export default function Explorer(): JSX.Element {
-	const [biorbitContract, setBiorbitContract] = useState<Contract | null>(null)
 	const [coordinates, setCoordinates] = useState<
 		Array<Array<[number, number]>>
 	>([])
@@ -28,15 +32,26 @@ export default function Explorer(): JSX.Element {
 	const pageSize: number = 50 // date hardcored
 
 	const { address } = useAccount()
-
-	const { data: biorbitProjects, isError } = useContractRead({
-		address: `0x${BIOrbitContractJson.address.substring(2)}`,
-		abi: BIOrbitContractJson.abi,
-		functionName: 'getProjectsByOwner'
-	})
+	const { data: walletClient } = useWalletClient()
 
 	const fetchData = async () => {
 		setIsLoading(true)
+
+		const provider = new ethers.providers.Web3Provider(window.ethereum)
+		await provider.send('eth_requestAccounts', [])
+		const signer = provider.getSigner()
+
+		const biorbitContract = new Contract(
+			BIOrbitContractJson.address,
+			BIOrbitContractJson.abi,
+			signer
+		)
+
+		const biorbitProjects = convertToMonitoringArea(
+			await biorbitContract.getProjectsByOwner()
+		)
+
+		console.log(biorbitProjects)
 
 		if (Array.isArray(biorbitProjects)) {
 			setProjects(biorbitProjects)
@@ -83,4 +98,54 @@ export default function Explorer(): JSX.Element {
 			/>
 		</>
 	)
+}
+
+function convertToMonitoringArea(data: any[]): MonitoringArea[] {
+	return data.map(item => {
+		const [
+			idData,
+			uri,
+			state,
+			name,
+			description,
+			extension,
+			footprintData,
+			country,
+			owner,
+			imageTimeSeriesData,
+			monitoringData
+		] = item
+
+		const id: number = parseInt(idData)
+		const footprint: Footprint[][] = footprintData.map((coordinate: string[]) =>
+			coordinate.map(coord => {
+				const [latitude, longitude] = coord.split(',')
+				return { latitude, longitude } as Footprint
+			})
+		)
+
+		const imageTimeSeries: ImageTimeSeries = {
+			detectionDate: imageTimeSeriesData[0],
+			forestCoverExtension: imageTimeSeriesData[1]
+		}
+
+		const monitoring: Monitoring[] = monitoringData.map((monitor: any) => ({
+			detectionDate: monitor[0],
+			forestCoverExtension: monitor[1]
+		}))
+
+		return {
+			id,
+			uri,
+			name,
+			description,
+			state,
+			extension,
+			country,
+			footprint,
+			owner,
+			imageTimeSeries,
+			monitoring
+		} as MonitoringArea
+	})
 }

@@ -13,9 +13,14 @@ import {
 	Link
 } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
-import { MonitoringArea } from '@/models/monitoring-area.model'
+import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { useEffect, useRef } from 'react'
 import ReactReadMoreReadLess from 'react-read-more-read-less'
+
+interface coordinates {
+	latitude: string
+	longitude: string
+}
 
 type Props = {
 	project: MonitoringArea
@@ -26,6 +31,8 @@ export function Project(props: Props): JSX.Element {
 
 	const elRef = useRef(null)
 	const selectedId = 0
+
+	const coordinates: coordinates = getLastCoordinates(project.footprint)
 
 	//Effect called when selectedId updates
 	useEffect(() => {}, [selectedId])
@@ -46,11 +53,7 @@ export function Project(props: Props): JSX.Element {
 			cursor='pointer'
 		>
 			<Flex alignItems='start' mb={3}>
-				<Heading
-					fontSize='lg'
-					fontFamily={`'Archivo', 'Raleway', serif`}
-					color='gray.700'
-				>
+				<Heading fontSize='lg' color='gray.700'>
 					{project.name}
 				</Heading>
 				<Spacer />
@@ -79,7 +82,7 @@ export function Project(props: Props): JSX.Element {
 								Coordinates
 							</Td>
 							<Td fontSize={'xs'}>
-								{project.coordinates.latitude} {project.coordinates.longitude}{' '}
+								{coordinates.latitude} {coordinates.longitude}
 							</Td>
 						</Tr>
 						<Tr>
@@ -98,45 +101,101 @@ export function Project(props: Props): JSX.Element {
 				</Table>
 			</TableContainer>
 			<Text fontSize={'xs'} mt={2} float='right'>
-				<Link size='sm' href={project.url} isExternal>
-					View on {project.registry} <ExternalLinkIcon />
+				<Link size='sm' href={project.uri} isExternal>
+					View on IPFS <ExternalLinkIcon />
 				</Link>
 			</Text>
 		</Box>
 	)
 }
 
-function getTagComponent(state: string): JSX.Element {
-	let backgroundColor: string
-
+function getTagComponent(state: number): JSX.Element {
 	switch (state) {
-		case 'active':
-			backgroundColor = 'green.500'
-			break
-		case 'monitor':
-			backgroundColor = 'yellow.500'
-			break
-		case 'paused':
-			backgroundColor = 'gray.500'
-			break
-		case 'inactive':
-			backgroundColor = 'red.500'
-			break
+		case 0:
+			return (
+				<Tag
+					size={'sm'}
+					variant='solid'
+					backgroundColor='green.500'
+					textAlign={'center'}
+					minW='fit-content'
+					ml={1}
+				>
+					active
+				</Tag>
+			)
+		case 1:
+			return (
+				<Tag
+					size={'sm'}
+					variant='solid'
+					backgroundColor='yellow.500'
+					textAlign={'center'}
+					minW='fit-content'
+					ml={1}
+				>
+					monitor
+				</Tag>
+			)
+		case 2:
+			return (
+				<Tag
+					size={'sm'}
+					variant='solid'
+					backgroundColor='gray.500'
+					textAlign={'center'}
+					minW='fit-content'
+					ml={1}
+				>
+					paused
+				</Tag>
+			)
+		case 3:
+			return (
+				<Tag
+					size={'sm'}
+					variant='solid'
+					backgroundColor='red.500'
+					textAlign={'center'}
+					minW='fit-content'
+					ml={1}
+				>
+					Inactive
+				</Tag>
+			)
 		default:
-			backgroundColor = 'gray.500'
-			break
+			return (
+				<Tag
+					size={'sm'}
+					variant='solid'
+					backgroundColor='gray.500'
+					textAlign={'center'}
+					minW='fit-content'
+					ml={1}
+				>
+					x
+				</Tag>
+			)
+	}
+}
+
+function getLastCoordinates(footprint: Footprint[][]): coordinates {
+	if (footprint.length === 0) {
+		return { latitude: '0', longitude: '0' }
 	}
 
-	return (
-		<Tag
-			size={'sm'}
-			variant='solid'
-			backgroundColor={backgroundColor}
-			textAlign={'center'}
-			minW='fit-content'
-			ml={1}
-		>
-			{state}
-		</Tag>
-	)
+	const lastLevel1 = footprint[footprint.length - 1]
+	if (lastLevel1.length === 0) {
+		return { latitude: '0', longitude: '0' }
+	}
+
+	const lastLevel2 = lastLevel1[lastLevel1.length - 1]
+	if (lastLevel2.length === 0) {
+		return { latitude: '0', longitude: '0' }
+	}
+
+	return {
+		latitude: lastLevel2.latitude,
+		longitude: lastLevel2.longitude
+	}
 }

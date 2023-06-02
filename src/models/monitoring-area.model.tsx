@@ -1,15 +1,28 @@
+export interface Monitoring {
+	detectionDate: string
+	forestCoverExtension: string
+}
+
+export interface ImageTimeSeries {
+	detectionDate: string[]
+	forestCoverExtension: string[]
+}
+
+export interface Footprint {
+	latitude: string
+	longitude: string
+}
+
 export interface MonitoringArea {
 	id: number
+	uri: string
 	name: string
 	description: string
-	state: string
-	extension: number
-	registry: string
+	state: number
+	extension: string
 	country: string
-	coordinates: {
-		latitude: string
-		longitude: string
-	}
+	footprint: Footprint[][]
 	owner: string
-	url: string
+	imageTimeSeries: ImageTimeSeries
+	monitoring: Monitoring[]
 }
