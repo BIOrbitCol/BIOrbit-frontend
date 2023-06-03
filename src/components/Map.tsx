@@ -156,7 +156,7 @@ export default function Map(props: Props) {
 				options={layerNames}
 				setOption={setLayerName}
 				activeOption={layerName}
-				themeColor={'green.500'}
+				themeColor={'blue.500'}
 			/>
 		</MapContainer>
 	)
