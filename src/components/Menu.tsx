@@ -371,6 +371,11 @@ export default function Menu(props: Props): JSX.Element {
 													]
 												})
 												actions.setSubmitting(false)
+												actions.resetForm()
+												if (polygonRef.current) {
+													polygonRef.current.clearLayers()
+												}
+												setCoordinates([])
 											}, 1000)
 										} else {
 											actions.setSubmitting(false)
