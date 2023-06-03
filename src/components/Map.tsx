@@ -1,43 +1,148 @@
+import style from '../styles/Map.module.css'
+import { useEffect, useRef, useState } from 'react'
+import { MapContainer, TileLayer, GeoJSON, useMapEvents } from 'react-leaflet'
+import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
+import { DrawControl } from './DrawControl'
+
+import L, { LatLngBounds, Layer } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-defaulticon-compatibility'
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
 import 'leaflet-draw'
 import 'leaflet-draw/dist/leaflet.draw.css'
-import style from '../styles/Map.module.css'
-import { MapContainer, TileLayer } from 'react-leaflet'
-import { DrawControl } from './DrawControl'
-import { useAccount } from 'wagmi'
-import { FeatureGroup } from 'react-leaflet'
-import * as L from 'leaflet'
+import 'leaflet-measure'
+import 'leaflet-measure/dist/leaflet-measure.js'
+import 'leaflet-measure/dist/leaflet-measure.css'
+import { Alert, AlertIcon, Box, Center, VStack } from '@chakra-ui/react'
+import LayerOptions from './LayerOptions'
+import { Feature, GeoJsonProperties, Geometry } from 'geojson'
 
 type Props = {
+	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
 	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
+	projects: MonitoringArea[]
+	selectedId: number | null
+	setSelectedId: React.Dispatch<React.SetStateAction<number | null>>
 	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
 	showDrawControl: boolean
 }
 
-export default function Map(props: Props): JSX.Element {
-	const { polygonRef, setCoordinates, showDrawControl } = props
+export default function Map(props: Props) {
+	const {
+		handleSelect,
+		polygonRef,
+		projects,
+		selectedId,
+		setCoordinates,
+		setSelectedId,
+		showDrawControl
+	} = props
+
+	const [geoJsonData, setGeoJsonData] = useState<
+		GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>[]
+	>([])
+
+	const mapRef = useRef<L.Map | null>(null)
+
+	const centerMap = (geoLayer: L.GeoJSON<any, Geometry>) => {
+		if (mapRef.current) {
+			const bounds = geoLayer.getBounds()
+			mapRef.current.fitBounds(bounds, {
+				paddingTopLeft: [600, 0],
+				maxZoom: 8
+			})
+		}
+	}
+
+	const onEachFeature = (feature: any, layer: L.Layer): void => {
+		if (feature.geometry.type === 'Polygon') {
+			layer.on('click', (): void => {
+				const geoJsonLayer = layer as L.GeoJSON
+				const geoJsonObject = geoJsonLayer.toGeoJSON()
+
+				if (geoJsonObject.type === 'Feature') {
+					setSelectedId(geoJsonObject.properties.id)
+					geoJsonLayer.bindPopup(
+						`coordinates: <p>${JSON.stringify(geoJsonObject)}<p>`
+					)
+				}
+			})
+		}
+	}
+
+	useEffect(() => {
+		let newGeoJsonData = []
+
+		for (let project of projects) {
+			const geoJSON: GeoJSON.Feature<
+				GeoJSON.Geometry,
+				GeoJSON.GeoJsonProperties
+			> = {
+				type: 'Feature',
+				geometry: {
+					type: 'Polygon',
+					coordinates: project.footprint.map((footprints: Footprint[]) =>
+						footprints.map((footprint: Footprint) => [
+							parseFloat(footprint.longitude),
+							parseFloat(footprint.latitude)
+						])
+					)
+				},
+				properties: {
+					id: project.id
+				}
+			}
+
+			newGeoJsonData.push(geoJSON)
+		}
+
+		setGeoJsonData(newGeoJsonData) // Update state with new GeoJSON data
+	}, [projects])
+
+	useEffect(() => {
+		if (selectedId) {
+			geoJsonData.forEach(
+				(data: Feature<Geometry, GeoJsonProperties>): void => {
+					if (data.properties && data.properties.id === selectedId) {
+						const geoLayer = L.geoJSON(data)
+						if (geoLayer) {
+							centerMap(geoLayer)
+						}
+					}
+				}
+			)
+		}
+	}, [selectedId])
 
 	return (
-		<>
-			<MapContainer
-				className={style.map}
-				center={[4.72366, -74.06286]}
-				zoom={6}
-				scrollWheelZoom={true}
-			>
-				<TileLayer
-					attribution='&copy; <a href="http://maps.stamen.com/#watercolor/12/37.7706/-122.3782">Stamen</a> Terrain Map'
-					url='https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg'
+		<MapContainer
+			ref={mapRef}
+			className={style.map}
+			center={[4.72366, -74.06286]}
+			zoom={6}
+			scrollWheelZoom={true}
+		>
+			<TileLayer
+				attribution='&copy; "<a href="http:/google.com/maps">Google</a>"'
+				url='https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga'
+			/>
+			<DrawControl
+				polygonRef={polygonRef}
+				setCoordinates={setCoordinates}
+				showDrawControl={showDrawControl}
+			/>
+			{geoJsonData.map((data, index) => (
+				<GeoJSON
+					key={index}
+					onEachFeature={onEachFeature}
+					data={data}
+					style={{
+						fillOpacity: 0.01,
+						weight: 2,
+						color: 'yellow'
+					}}
 				/>
-
-				<DrawControl
-					polygonRef={polygonRef}
-					setCoordinates={setCoordinates}
-					showDrawControl={showDrawControl}
-				/>
-			</MapContainer>
-		</>
+			))}
+		</MapContainer>
 	)
 }

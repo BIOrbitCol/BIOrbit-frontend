@@ -67,12 +67,12 @@ type Props = {
 	filtedProjects: MonitoringArea[]
 	isLoading: boolean
 	handlePage: React.Dispatch<React.SetStateAction<number>>
-	handleSelect: React.Dispatch<React.SetStateAction<null>>
+	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
 	page: number
 	pageSize: number
-	polygonRef: React.MutableRefObject<L.FeatureGroup | null> // Modify the type here
+	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
 	projects: MonitoringArea[]
-	selectedId: null
+	selectedId: number | null
 	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
 	setFiltedProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
 	setProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
@@ -310,7 +310,13 @@ export default function Menu(props: Props): JSX.Element {
 					<TabPanels overflowY='auto' maxH='77.9vh'>
 						<TabPanel padding={0}>
 							<>
-								{filtedProjects && <Results projects={filtedProjects} />}
+								{filtedProjects && (
+									<Results
+										handleSelect={handleSelect}
+										projects={filtedProjects}
+										selectedId={selectedId}
+									/>
+								)}
 								{projects && projects.length > 0 && (
 									<ResultsPagination
 										page={page}
@@ -319,7 +325,7 @@ export default function Menu(props: Props): JSX.Element {
 										projects={filtedProjects}
 										handlePage={handlePage}
 										isLoading={false}
-										selectedId={null}
+										selectedId={selectedId}
 									/>
 								)}
 							</>
@@ -354,8 +360,6 @@ export default function Menu(props: Props): JSX.Element {
 
 												const footprint: string[][][] =
 													convertArrayToString(coordinates)
-
-												console.log('footprint: ', footprint)
 
 												onMintProject({
 													args: [

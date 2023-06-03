@@ -1,6 +1,4 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
-//import '@fontsource/archivo/700.css'
-
 import { Box, Text, Flex, Button } from '@chakra-ui/react'
 import { MonitoringArea } from '@/models/monitoring-area.model'
 
@@ -10,12 +8,12 @@ type Props = {
 	page: number
 	pageSize: number
 	projects: MonitoringArea[]
-	selectedId: null
+	selectedId: number | null
 	total: number
 }
 
 export function ResultsPagination(props: Props) {
-	const { total, page, pageSize, handlePage } = props
+	const { selectedId, total, page, pageSize, handlePage } = props
 	const maxPage: number = Math.floor(total / pageSize)
 
 	return (

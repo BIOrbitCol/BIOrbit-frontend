@@ -16,6 +16,7 @@ import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { useEffect, useRef } from 'react'
 import ReactReadMoreReadLess from 'react-read-more-read-less'
+import scrollIntoView from 'scroll-into-view'
 
 interface Coordinates {
 	latitude: string
@@ -23,19 +24,26 @@ interface Coordinates {
 }
 
 type Props = {
+	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
 	project: MonitoringArea
+	selectedId: number | null
 }
 
 export function Project(props: Props): JSX.Element {
-	const { project } = props
+	const { handleSelect, project, selectedId } = props
 
-	const elRef = useRef(null)
-	const selectedId = 0
+	const elRef = useRef<HTMLDivElement | null>(null)
 
 	const coordinates: Coordinates = getLastCoordinates(project.footprint)
 
-	//Effect called when selectedId updates
-	useEffect(() => {}, [selectedId])
+	useEffect(() => {
+		if (selectedId == project.id) {
+			scrollIntoView(elRef.current, {
+				time: 4000,
+				align: { top: 0, topOffset: 7 }
+			})
+		}
+	}, [selectedId])
 
 	return (
 		<Box
@@ -48,7 +56,7 @@ export function Project(props: Props): JSX.Element {
 			w={'100%'}
 			p={3}
 			rounded='sm'
-			/*onClick={() => handleSelect(project.Id)}*/
+			onClick={() => handleSelect(project.id)}
 			_hover={{ borderColor: 'blue.500' }}
 			cursor='pointer'
 		>

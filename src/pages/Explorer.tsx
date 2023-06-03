@@ -13,7 +13,9 @@ import { Contract, ethers } from 'ethers'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
 import { useAccount, useContractRead, useWalletClient } from 'wagmi'
 
-const MapWithNoSSR = dynamic(() => import('../components/Map'), { ssr: false })
+const MapWithNoSSR = dynamic(() => import('../components/Map'), {
+	ssr: false
+})
 
 export default function Explorer(): JSX.Element {
 	const [coordinates, setCoordinates] = useState<
@@ -23,13 +25,13 @@ export default function Explorer(): JSX.Element {
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [page, setPage] = useState<number>(0)
 	const [projects, setProjects] = useState<MonitoringArea[]>([])
-	const [selectedId, setSelectedId] = useState(null) // lack typo
+	const [selectedId, setSelectedId] = useState<number | null>(null)
 	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
 	const [total, setTotal] = useState<number>(0)
 
 	const polygonRef = useRef<L.FeatureGroup | null>(null)
 
-	const pageSize: number = 50 // date hardcored
+	const pageSize: number = 50
 
 	const { address } = useAccount()
 	const { data: walletClient } = useWalletClient()
@@ -92,7 +94,11 @@ export default function Explorer(): JSX.Element {
 				total={total}
 			/>
 			<MapWithNoSSR
+				handleSelect={setSelectedId}
+				projects={filtedProjects}
 				polygonRef={polygonRef}
+				selectedId={selectedId}
+				setSelectedId={setSelectedId}
 				setCoordinates={setCoordinates}
 				showDrawControl={showDrawControl}
 			/>
