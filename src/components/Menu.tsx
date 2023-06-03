@@ -627,6 +627,7 @@ async function listenTransaction(
 				throw new Error('Transaction failed')
 			} else if (transactionReceipt.status === 1) {
 				console.log('Transaction succeeded')
+
 				setState(false)
 				return transactionReceipt
 			} else {

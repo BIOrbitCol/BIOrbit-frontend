@@ -42,7 +42,16 @@ export default function Map(props: Props) {
 		GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>[]
 	>([])
 
+	const [layerName, setLayerName] = useState<string>('NDVI')
+
 	const mapRef = useRef<L.Map | null>(null)
+
+	// Define layer name options
+	let layerNames = [
+		{ label: 'Transparent', name: 'Transparent' },
+		{ label: 'RGB', name: 'RGB' },
+		{ label: 'NDVI', name: 'NDVI' }
+	]
 
 	const centerMap = (geoLayer: L.GeoJSON<any, Geometry>) => {
 		if (mapRef.current) {
@@ -143,6 +152,12 @@ export default function Map(props: Props) {
 					}}
 				/>
 			))}
+			<LayerOptions
+				options={layerNames}
+				setOption={setLayerName}
+				activeOption={layerName}
+				themeColor={'green.500'}
+			/>
 		</MapContainer>
 	)
 }

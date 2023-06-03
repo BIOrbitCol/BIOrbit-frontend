@@ -18,12 +18,16 @@ export function LayerOptions(props: Props) {
 	return (
 		<ButtonGroup
 			isAttached
-			boxShadow='dark-lg'
+			position='absolute'
+			bottom={'3vh'}
+			left={'125vh'}
+			zIndex={1000}
 			size='sm'
 			rounded={'sm'}
 			borderStyle={'solid'}
 			borderWidth={'1px'}
 			borderColor={'gray.800'}
+			boxShadow='dark-lg'
 			overflow={'hidden'}
 		>
 			{options.map((option, ind) => (
