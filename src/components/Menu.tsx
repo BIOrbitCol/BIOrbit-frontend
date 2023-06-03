@@ -50,11 +50,11 @@ import { ReactNode } from 'react'
 import { FeatureGroup } from 'react-leaflet'
 import * as L from 'leaflet'
 import { Results } from './Results'
-import { MonitoringArea } from '@/models/monitoring-area.model'
+import { Monitoring, MonitoringArea } from '@/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
 import { useContractWrite } from 'wagmi'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
-import { parseEther } from 'ethers/lib/utils'
+import { ethers } from 'ethers'
 
 type CoordinatesFieldArrayProps = {
 	coordinates: number[][][]
@@ -75,8 +75,10 @@ type Props = {
 	selectedId: number | null
 	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
 	setFiltedProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
+	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 	setProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
 	setShowDrawControl: React.Dispatch<React.SetStateAction<boolean>>
+	setSincronized: React.Dispatch<React.SetStateAction<boolean>>
 	setTotal: React.Dispatch<React.SetStateAction<number>>
 	total: number
 }
@@ -85,9 +87,9 @@ export default function Menu(props: Props): JSX.Element {
 	const {
 		coordinates,
 		filtedProjects,
-		isLoading,
 		handlePage,
 		handleSelect,
+		isLoading,
 		page,
 		pageSize,
 		polygonRef,
@@ -95,8 +97,10 @@ export default function Menu(props: Props): JSX.Element {
 		selectedId,
 		setCoordinates,
 		setFiltedProjects,
-		setProjects,
 		setShowDrawControl,
+		setIsLoading,
+		setProjects,
+		setSincronized,
 		setTotal,
 		total
 	} = props
@@ -108,7 +112,13 @@ export default function Menu(props: Props): JSX.Element {
 		useState<string>('Polygon')
 	const protectedAreasTabRef = useRef<HTMLButtonElement>(null)
 
-	const { write: onMintProject } = useContractWrite({
+	const {
+		data,
+		isLoading: onMintProjectLoading,
+		isSuccess: onMintProjecSuccess,
+		isError: onMintProjectError,
+		write: onMintProject
+	} = useContractWrite({
 		address: `0x${BIOrbitContractJson.address.substring(2)}`,
 		abi: BIOrbitContractJson.abi,
 		functionName: 'mintProject',
@@ -236,6 +246,19 @@ export default function Menu(props: Props): JSX.Element {
 		}
 	}, [address])
 
+	useEffect(() => {
+		if (data) {
+			listenTransaction(data.hash, setSincronized)
+		}
+	}, [onMintProjecSuccess])
+
+	useEffect(() => {
+		console.log('onMintProjectError: ', onMintProjectError)
+		if (onMintProjectError) {
+			setIsLoading(false)
+		}
+	}, [onMintProjectError])
+
 	return (
 		<Flex
 			width={'500px'}
@@ -355,6 +378,7 @@ export default function Menu(props: Props): JSX.Element {
 									) => {
 										if (coordinates.length !== 0) {
 											setTimeout(() => {
+												setIsLoading(true)
 												const extension: string =
 													calculateEarthPolygonArea(coordinates)
 
@@ -370,8 +394,10 @@ export default function Menu(props: Props): JSX.Element {
 														values.country
 													]
 												})
+
 												actions.setSubmitting(false)
 												actions.resetForm()
+												setShowDrawControl(false)
 												if (polygonRef.current) {
 													polygonRef.current.clearLayers()
 												}
@@ -579,4 +605,37 @@ function convertArrayToString(arr: number[][][]): string[][][] {
 	return arr.map(innerArray =>
 		innerArray.map(pair => pair.map(num => num.toString()))
 	)
+}
+
+async function listenTransaction(
+	hash: string,
+	setState: React.Dispatch<React.SetStateAction<boolean>>
+): Promise<ethers.providers.TransactionReceipt | void> {
+	const provider = new ethers.providers.JsonRpcProvider(
+		'https://rpc-mumbai.maticvigil.com'
+	)
+	let transactionReceipt: ethers.providers.TransactionReceipt | null = null
+
+	do {
+		await new Promise(resolve => setTimeout(resolve, 3000))
+
+		transactionReceipt = await provider.getTransactionReceipt(hash)
+
+		if (transactionReceipt) {
+			if (transactionReceipt.status === 0) {
+				setState(false)
+				throw new Error('Transaction failed')
+			} else if (transactionReceipt.status === 1) {
+				console.log('Transaction succeeded')
+				setState(false)
+				return transactionReceipt
+			} else {
+				console.log('Transaction status unknown')
+			}
+		} else {
+			console.log('Transaction not found')
+		}
+	} while (!transactionReceipt)
+
+	console.log('Unable to determine transaction status')
 }

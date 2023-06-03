@@ -27,6 +27,7 @@ export default function Explorer(): JSX.Element {
 	const [projects, setProjects] = useState<MonitoringArea[]>([])
 	const [selectedId, setSelectedId] = useState<number | null>(null)
 	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
+	const [sincronized, setSincronized] = useState<boolean>(true)
 	const [total, setTotal] = useState<number>(0)
 
 	const polygonRef = useRef<L.FeatureGroup | null>(null)
@@ -37,8 +38,6 @@ export default function Explorer(): JSX.Element {
 	const { data: walletClient } = useWalletClient()
 
 	const fetchData = async () => {
-		setIsLoading(true)
-
 		const ethereum = (window as any).ethereum
 
 		const provider = new ethers.providers.Web3Provider(ethereum)
@@ -61,6 +60,7 @@ export default function Explorer(): JSX.Element {
 			setTotal(biorbitProjects.length ? biorbitProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
 		}
 		setSelectedId(null)
+		setSincronized(true)
 		setIsLoading(false)
 	}
 
@@ -68,9 +68,12 @@ export default function Explorer(): JSX.Element {
 		if (address) {
 			fetchData()
 			return
+		} else {
+			setProjects([])
+			setFiltedProjects([])
 		}
 		setIsLoading(false)
-	}, [page, address])
+	}, [address, page, sincronized])
 
 	return (
 		<>
@@ -88,8 +91,10 @@ export default function Explorer(): JSX.Element {
 				selectedId={selectedId}
 				setCoordinates={setCoordinates}
 				setFiltedProjects={setFiltedProjects}
+				setIsLoading={setIsLoading}
 				setProjects={setProjects}
 				setShowDrawControl={setShowDrawControl}
+				setSincronized={setSincronized}
 				setTotal={setTotal}
 				total={total}
 			/>
