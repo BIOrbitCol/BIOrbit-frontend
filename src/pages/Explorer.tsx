@@ -27,6 +27,7 @@ export default function Explorer(): JSX.Element {
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [page, setPage] = useState<number>(0)
 	const [projects, setProjects] = useState<MonitoringArea[]>([])
+	const [projectsNotOwned, setProjectsNotOwned] = useState<MonitoringArea[]>([])
 	const [selectedId, setSelectedId] = useState<number | null>(null)
 	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
 	const [sincronized, setSincronized] = useState<boolean>(true)
@@ -65,14 +66,19 @@ export default function Explorer(): JSX.Element {
 		}
 
 		if (contract) {
-			const biorbitProjects = convertToMonitoringArea(
+			const myProjects = convertToMonitoringArea(
 				await contract.getProjectsByOwner()
 			)
 
-			if (Array.isArray(biorbitProjects)) {
-				setProjects(biorbitProjects)
-				setFiltedProjects(biorbitProjects)
-				setTotal(biorbitProjects.length ? biorbitProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
+			const myNotProjects = convertToMonitoringArea(
+				await contract.getProjectsNotOwned()
+			)
+
+			if (Array.isArray(myProjects && myNotProjects)) {
+				setProjectsNotOwned(myNotProjects)
+				setProjects(myProjects)
+				setFiltedProjects(myProjects)
+				setTotal(myProjects.length ? myProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
 			}
 		}
 		setSelectedId(null)
@@ -108,6 +114,7 @@ export default function Explorer(): JSX.Element {
 				pageSize={pageSize}
 				polygonRef={polygonRef}
 				projects={projects}
+				projectsNotOwned={projectsNotOwned}
 				selectedId={selectedId}
 				setCoordinates={setCoordinates}
 				setFiltedProjects={setFiltedProjects}
@@ -121,6 +128,7 @@ export default function Explorer(): JSX.Element {
 			<MapWithNoSSR
 				handleSelect={setSelectedId}
 				projects={filtedProjects}
+				projectsNotOwned={projectsNotOwned}
 				polygonRef={polygonRef}
 				selectedId={selectedId}
 				setSelectedId={setSelectedId}
@@ -132,51 +140,88 @@ export default function Explorer(): JSX.Element {
 }
 
 function convertToMonitoringArea(data: any[]): MonitoringArea[] {
-	return data.map(item => {
-		const [
-			idData,
-			uri,
-			state,
-			name,
-			description,
-			extensionData,
-			footprintData,
-			country,
-			owner,
-			imageTimeSeriesData,
-			monitoringData
-		] = item
+	try {
+		return data.map(item => {
+			const [
+				idData,
+				uri,
+				state,
+				name,
+				description,
+				extensionData,
+				footprintData,
+				country,
+				owner,
+				imageTimeSeriesData,
+				monitoringData
+			] = item
 
-		const id: number = parseInt(idData)
-		let extension: number | string = parseFloat(extensionData)
-		extension = extension.toFixed(2)
+			const id: number = parseInt(idData)
+			let extension: number | string = parseFloat(extensionData)
+			extension = extension.toFixed(2)
 
-		const footprint: Footprint[] = footprintData.map((coordinate: any) => {
-			const [latitude, longitude] = coordinate
-			return { latitude, longitude } as Footprint
+			const footprint: Footprint[] = footprintData.map((coordinate: any) => {
+				const [latitude, longitude] = coordinate
+				return { latitude, longitude } as Footprint
+			})
+			const imageTimeSeries: ImageTimeSeries = {
+				detectionDate: imageTimeSeriesData[0],
+				forestCoverExtension: imageTimeSeriesData[1]
+			}
+
+			const monitoring: Monitoring[] = monitoringData.map((monitor: any) => ({
+				detectionDate: monitor[0],
+				forestCoverExtension: monitor[1]
+			}))
+
+			return {
+				id,
+				uri,
+				name,
+				description,
+				state,
+				extension,
+				country,
+				footprint,
+				owner,
+				imageTimeSeries,
+				monitoring
+			} as MonitoringArea
 		})
-		const imageTimeSeries: ImageTimeSeries = {
-			detectionDate: imageTimeSeriesData[0],
-			forestCoverExtension: imageTimeSeriesData[1]
-		}
+	} catch (error) {
+		return data.map(item => {
+			const [
+				idData,
+				uri,
+				state,
+				name,
+				description,
+				extensionData,
+				footprintData,
+				country,
+				owner
+			] = item
 
-		const monitoring: Monitoring[] = monitoringData.map((monitor: any) => ({
-			detectionDate: monitor[0],
-			forestCoverExtension: monitor[1]
-		}))
+			const id: number = parseInt(idData)
+			let extension: number | string = parseFloat(extensionData)
+			extension = extension.toFixed(2)
 
-		return {
-			id,
-			uri,
-			name,
-			description,
-			state,
-			extension,
-			country,
-			footprint,
-			owner,
-			imageTimeSeries,
-			monitoring
-		} as MonitoringArea
-	})
+			const footprint: Footprint[] = footprintData.map((coordinate: any) => {
+				const [latitude, longitude] = coordinate
+				return { latitude, longitude } as Footprint
+			})
+
+			return {
+				id,
+				uri,
+				name,
+				description,
+				state,
+				extension,
+				country,
+				footprint,
+				owner
+			} as MonitoringArea
+		})
+	}
 }

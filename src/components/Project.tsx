@@ -19,6 +19,7 @@ import ReactReadMoreReadLess from 'react-read-more-read-less'
 import scrollIntoView from 'scroll-into-view'
 import { TrnasferModal } from './TransferModal'
 import { BIOrbit } from '../../@types/typechain-types'
+import { useAccount } from 'wagmi'
 
 interface Coordinates {
 	latitude: string
@@ -48,7 +49,11 @@ export function Project(props: Props): JSX.Element {
 
 	const elRef = useRef<HTMLDivElement | null>(null)
 
+	const { address } = useAccount()
+
 	const coordinates: Coordinates = getLastCoordinates(project.footprint)
+
+	const enable: boolean = project.owner === address ? true : false
 
 	useEffect(() => {
 		if (selectedId == project.id) {
@@ -125,16 +130,19 @@ export function Project(props: Props): JSX.Element {
 			<Box
 				mt={2}
 				display={'flex'}
+				float={!enable ? 'right' : undefined}
 				alignItems={'center'}
 				justifyContent={'space-between'}
 			>
-				<TrnasferModal
-					biorbitContract={biorbitContract}
-					isLoading={isLoading}
-					project={project}
-					setIsLoading={setIsLoading}
-					setSincronized={setSincronized}
-				/>
+				{enable && (
+					<TrnasferModal
+						biorbitContract={biorbitContract}
+						isLoading={isLoading}
+						project={project}
+						setIsLoading={setIsLoading}
+						setSincronized={setSincronized}
+					/>
+				)}
 				<Text fontSize={'xs'}>
 					<Link size='sm' href={project.uri} isExternal>
 						View on IPFS <ExternalLinkIcon />

@@ -72,6 +72,7 @@ type Props = {
 	pageSize: number
 	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
 	projects: MonitoringArea[]
+	projectsNotOwned: MonitoringArea[]
 	selectedId: number | null
 	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
 	setFiltedProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
@@ -95,6 +96,7 @@ export default function Menu(props: Props): JSX.Element {
 		pageSize,
 		polygonRef,
 		projects,
+		projectsNotOwned,
 		selectedId,
 		setCoordinates,
 		setFiltedProjects,
@@ -311,6 +313,7 @@ export default function Menu(props: Props): JSX.Element {
 										handleSelect={handleSelect}
 										isLoading={isLoading}
 										projects={filtedProjects}
+										projectsNotOwned={projectsNotOwned}
 										selectedId={selectedId}
 										setIsLoading={setIsLoading}
 										setSincronized={setSincronized}

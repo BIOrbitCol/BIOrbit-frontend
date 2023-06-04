@@ -8,6 +8,7 @@ type Props = {
 	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
 	isLoading: boolean
 	projects: MonitoringArea[]
+	projectsNotOwned: MonitoringArea[]
 	selectedId: number | null
 	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 	setSincronized: React.Dispatch<React.SetStateAction<boolean>>
@@ -19,6 +20,7 @@ export function Results(props: Props) {
 		handleSelect,
 		isLoading,
 		projects,
+		projectsNotOwned,
 		selectedId,
 		setIsLoading,
 		setSincronized
@@ -27,18 +29,34 @@ export function Results(props: Props) {
 		<Box overflowY={'auto'} flex={1} p={2}>
 			<VStack h={'100%'} spacing={2} paddingBottom={2}>
 				{projects.length ? (
-					projects.map((project: MonitoringArea, index: number) => (
-						<Project
-							biorbitContract={biorbitContract}
-							handleSelect={handleSelect}
-							isLoading={isLoading}
-							key={index}
-							project={project}
-							selectedId={selectedId}
-							setIsLoading={setIsLoading}
-							setSincronized={setSincronized}
-						/>
-					))
+					<>
+						{projects.map((project: MonitoringArea, index: number) => (
+							<Project
+								biorbitContract={biorbitContract}
+								handleSelect={handleSelect}
+								isLoading={isLoading}
+								key={index}
+								project={project}
+								selectedId={selectedId}
+								setIsLoading={setIsLoading}
+								setSincronized={setSincronized}
+							/>
+						))}
+						{projectsNotOwned.map(
+							(projectNotOwned: MonitoringArea, index: number) => (
+								<Project
+									biorbitContract={biorbitContract}
+									handleSelect={handleSelect}
+									isLoading={isLoading}
+									key={index}
+									project={projectNotOwned}
+									selectedId={selectedId}
+									setIsLoading={setIsLoading}
+									setSincronized={setSincronized}
+								/>
+							)
+						)}
+					</>
 				) : (
 					<Text size={'md'}>- No information -</Text>
 				)}

@@ -78,6 +78,40 @@ export declare namespace BIOrbit {
     imageTimeSeries: BIOrbit.ImageTimeSeriesStructOutput;
     monitoring: BIOrbit.MonitoringStructOutput[];
   };
+
+  export type ProjectLiteStruct = {
+    id: BigNumberish;
+    uri: string;
+    state: BigNumberish;
+    name: string;
+    description: string;
+    extension: string;
+    footprint: string[][];
+    country: string;
+    owner: string;
+  };
+
+  export type ProjectLiteStructOutput = [
+    BigNumber,
+    string,
+    number,
+    string,
+    string,
+    string,
+    string[][],
+    string,
+    string
+  ] & {
+    id: BigNumber;
+    uri: string;
+    state: number;
+    name: string;
+    description: string;
+    extension: string;
+    footprint: string[][];
+    country: string;
+    owner: string;
+  };
 }
 
 export interface BIOrbitInterface extends utils.Interface {
@@ -90,6 +124,7 @@ export interface BIOrbitInterface extends utils.Interface {
     "getDetectionDatesAndForestCoverExtensionsByProjectId(uint256)": FunctionFragment;
     "getProjects()": FunctionFragment;
     "getProjectsByOwner()": FunctionFragment;
+    "getProjectsNotOwned()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mintProject(string,string,string,string[][],string)": FunctionFragment;
     "name()": FunctionFragment;
@@ -127,6 +162,10 @@ export interface BIOrbitInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getProjectsByOwner",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProjectsNotOwned",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -189,6 +228,10 @@ export interface BIOrbitInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getProjectsByOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProjectsNotOwned",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -378,6 +421,10 @@ export interface BIOrbit extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BIOrbit.ProjectStructOutput[]]>;
 
+    getProjectsNotOwned(
+      overrides?: CallOverrides
+    ): Promise<[BIOrbit.ProjectLiteStructOutput[]]>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -506,6 +553,10 @@ export interface BIOrbit extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BIOrbit.ProjectStructOutput[]>;
 
+  getProjectsNotOwned(
+    overrides?: CallOverrides
+  ): Promise<BIOrbit.ProjectLiteStructOutput[]>;
+
   isApprovedForAll(
     owner: string,
     operator: string,
@@ -625,6 +676,10 @@ export interface BIOrbit extends BaseContract {
     getProjectsByOwner(
       overrides?: CallOverrides
     ): Promise<BIOrbit.ProjectStructOutput[]>;
+
+    getProjectsNotOwned(
+      overrides?: CallOverrides
+    ): Promise<BIOrbit.ProjectLiteStructOutput[]>;
 
     isApprovedForAll(
       owner: string,
@@ -786,6 +841,8 @@ export interface BIOrbit extends BaseContract {
 
     getProjectsByOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getProjectsNotOwned(overrides?: CallOverrides): Promise<BigNumber>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -889,6 +946,10 @@ export interface BIOrbit extends BaseContract {
     getProjects(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getProjectsByOwner(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getProjectsNotOwned(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
