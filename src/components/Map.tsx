@@ -51,6 +51,8 @@ export default function Map(props: Props) {
 		GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>[]
 	>([])
 
+	const [isHidden, setIsHidden] = useState<boolean>(true)
+
 	const [layerName, setLayerName] = useState<string>('NDVI')
 
 	const { address } = useAccount()
@@ -163,6 +165,7 @@ export default function Map(props: Props) {
 						const geoLayer = L.geoJSON(data)
 						if (geoLayer) {
 							centerMap(geoLayer)
+							setIsHidden(false)
 						}
 					}
 				}
@@ -173,6 +176,7 @@ export default function Map(props: Props) {
 						const geoLayer = L.geoJSON(data)
 						if (geoLayer) {
 							centerMap(geoLayer)
+							setIsHidden(true)
 						}
 					}
 				}
@@ -221,12 +225,14 @@ export default function Map(props: Props) {
 					}}
 				/>
 			))}
-			<LayerOptions
-				options={layerNames}
-				setOption={setLayerName}
-				activeOption={layerName}
-				themeColor={'blue.500'}
-			/>
+			{!isHidden && (
+				<LayerOptions
+					options={layerNames}
+					setOption={setLayerName}
+					activeOption={layerName}
+					themeColor={'blue.500'}
+				/>
+			)}
 		</MapContainer>
 	)
 }

@@ -28,7 +28,7 @@ export function Results(props: Props) {
 	return (
 		<Box overflowY={'auto'} flex={1} p={2}>
 			<VStack h={'100%'} spacing={2} paddingBottom={2}>
-				{projects.length ? (
+				{projects.length || projectsNotOwned.length ? (
 					<>
 						{projects.map((project: MonitoringArea, index: number) => (
 							<Project
