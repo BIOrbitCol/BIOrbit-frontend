@@ -12,15 +12,17 @@ import * as L from 'leaflet'
 import { Contract, ethers } from 'ethers'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
 import { useAccount, useContractRead, useWalletClient } from 'wagmi'
+import { BIOrbit } from '../../@types/typechain-types'
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), {
 	ssr: false
 })
 
 export default function Explorer(): JSX.Element {
-	const [coordinates, setCoordinates] = useState<
-		Array<Array<[number, number]>>
-	>([])
+	const polygonRef = useRef<L.FeatureGroup | null>(null)
+
+	const [biorbitContract, setBiorbitContract] = useState<BIOrbit | null>(null)
+	const [coordinates, setCoordinates] = useState<number[][]>([])
 	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [page, setPage] = useState<number>(0)
@@ -28,40 +30,54 @@ export default function Explorer(): JSX.Element {
 	const [selectedId, setSelectedId] = useState<number | null>(null)
 	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
 	const [sincronized, setSincronized] = useState<boolean>(true)
+	const [provider, setProvider] =
+		useState<ethers.providers.Web3Provider | null>(null)
+	const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | null>(
+		null
+	)
 	const [total, setTotal] = useState<number>(0)
-
-	const polygonRef = useRef<L.FeatureGroup | null>(null)
 
 	const pageSize: number = 50
 
 	const { address } = useAccount()
-	const { data: walletClient } = useWalletClient()
 
 	const fetchData = async () => {
-		const ethereum = (window as any).ethereum
+		let contract: BIOrbit | null = null
 
-		const provider = new ethers.providers.Web3Provider(ethereum)
-		await provider.send('eth_requestAccounts', [])
-		const signer = provider.getSigner()
+		if (!provider) {
+			const ethereum = (window as any).ethereum
 
-		const biorbitContract = new Contract(
-			BIOrbitContractJson.address,
-			BIOrbitContractJson.abi,
-			signer
-		)
+			const web3Provider = new ethers.providers.Web3Provider(ethereum)
+			await web3Provider.send('eth_requestAccounts', [])
+			const web3Signer = web3Provider.getSigner()
 
-		const biorbitProjects = convertToMonitoringArea(
-			await biorbitContract.getProjectsByOwner()
-		)
+			contract = new Contract(
+				BIOrbitContractJson.address,
+				BIOrbitContractJson.abi,
+				web3Signer
+			) as BIOrbit
 
-		if (Array.isArray(biorbitProjects)) {
-			setProjects(biorbitProjects)
-			setFiltedProjects(biorbitProjects)
-			setTotal(biorbitProjects.length ? biorbitProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
+			setProvider(web3Provider)
+			setSigner(web3Signer)
+			setBiorbitContract(contract)
+		} else {
+			contract = biorbitContract
+		}
+
+		if (contract) {
+			const biorbitProjects = convertToMonitoringArea(
+				await contract.getProjectsByOwner()
+			)
+
+			if (Array.isArray(biorbitProjects)) {
+				setProjects(biorbitProjects)
+				setFiltedProjects(biorbitProjects)
+				setTotal(biorbitProjects.length ? biorbitProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
+			}
 		}
 		setSelectedId(null)
-		setSincronized(true)
 		setIsLoading(false)
+		setSincronized(true)
 	}
 
 	useEffect(() => {
@@ -69,6 +85,9 @@ export default function Explorer(): JSX.Element {
 			fetchData()
 			return
 		} else {
+			setProvider(null)
+			setSigner(null)
+			setBiorbitContract(null)
 			setProjects([])
 			setFiltedProjects([])
 		}
@@ -79,6 +98,7 @@ export default function Explorer(): JSX.Element {
 		<>
 			<Wallet />
 			<Menu
+				biorbitContract={biorbitContract}
 				coordinates={coordinates}
 				filtedProjects={filtedProjects}
 				isLoading={isLoading}
@@ -130,13 +150,11 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 		const id: number = parseInt(idData)
 		let extension: number | string = parseFloat(extensionData)
 		extension = extension.toFixed(2)
-		const footprint: Footprint[][] = footprintData.map((coordinate: string[]) =>
-			coordinate.map(coord => {
-				const [latitude, longitude] = coord.split(',')
-				return { latitude, longitude } as Footprint
-			})
-		)
 
+		const footprint: Footprint[] = footprintData.map((coordinate: any) => {
+			const [latitude, longitude] = coordinate
+			return { latitude, longitude } as Footprint
+		})
 		const imageTimeSeries: ImageTimeSeries = {
 			detectionDate: imageTimeSeriesData[0],
 			forestCoverExtension: imageTimeSeriesData[1]

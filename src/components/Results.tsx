@@ -1,25 +1,42 @@
 import { Box, Center, Text, VStack } from '@chakra-ui/react'
 import { Project } from './Project'
 import { MonitoringArea } from '@/models/monitoring-area.model'
+import { BIOrbit } from '../../@types/typechain-types'
 
 type Props = {
+	biorbitContract: BIOrbit | null
 	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
+	isLoading: boolean
 	projects: MonitoringArea[]
 	selectedId: number | null
+	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+	setSincronized: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export function Results(props: Props) {
-	const { handleSelect, projects, selectedId } = props
+	const {
+		biorbitContract,
+		handleSelect,
+		isLoading,
+		projects,
+		selectedId,
+		setIsLoading,
+		setSincronized
+	} = props
 	return (
 		<Box overflowY={'auto'} flex={1} p={2}>
 			<VStack h={'100%'} spacing={2} paddingBottom={2}>
 				{projects.length ? (
 					projects.map((project: MonitoringArea, index: number) => (
 						<Project
+							biorbitContract={biorbitContract}
 							handleSelect={handleSelect}
-							key={project.id}
+							isLoading={isLoading}
+							key={index}
 							project={project}
 							selectedId={selectedId}
+							setIsLoading={setIsLoading}
+							setSincronized={setSincronized}
 						/>
 					))
 				) : (

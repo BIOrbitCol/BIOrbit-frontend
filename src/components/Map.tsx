@@ -23,7 +23,7 @@ type Props = {
 	projects: MonitoringArea[]
 	selectedId: number | null
 	setSelectedId: React.Dispatch<React.SetStateAction<number | null>>
-	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
+	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
 	showDrawControl: boolean
 }
 
@@ -90,12 +90,12 @@ export default function Map(props: Props) {
 				type: 'Feature',
 				geometry: {
 					type: 'Polygon',
-					coordinates: project.footprint.map((footprints: Footprint[]) =>
-						footprints.map((footprint: Footprint) => [
+					coordinates: [
+						project.footprint.map((footprint: Footprint) => [
 							parseFloat(footprint.longitude),
 							parseFloat(footprint.latitude)
 						])
-					)
+					]
 				},
 				properties: {
 					id: project.id

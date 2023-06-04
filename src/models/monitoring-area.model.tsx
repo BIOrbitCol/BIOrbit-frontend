@@ -21,7 +21,7 @@ export interface MonitoringArea {
 	state: number
 	extension: string
 	country: string
-	footprint: Footprint[][]
+	footprint: Footprint[]
 	owner: string
 	imageTimeSeries: ImageTimeSeries
 	monitoring: Monitoring[]

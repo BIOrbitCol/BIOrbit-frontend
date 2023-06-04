@@ -46,8 +46,6 @@ import {
 } from '@chakra-ui/react'
 import { useAccount } from 'wagmi'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import { ReactNode } from 'react'
-import { FeatureGroup } from 'react-leaflet'
 import * as L from 'leaflet'
 import { Results } from './Results'
 import { Monitoring, MonitoringArea } from '@/models/monitoring-area.model'
@@ -55,15 +53,17 @@ import { ResultsPagination } from './ResultsPagination'
 import { useContractWrite } from 'wagmi'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
 import { ethers } from 'ethers'
+import { BIOrbit } from '../../@types/typechain-types'
 
 type CoordinatesFieldArrayProps = {
-	coordinates: number[][][]
+	coordinates: number[][]
 	push: FieldArrayRenderProps['push']
 	form: FormikProps<any>
 }
 
 type Props = {
-	coordinates: number[][][]
+	biorbitContract: BIOrbit | null
+	coordinates: number[][]
 	filtedProjects: MonitoringArea[]
 	isLoading: boolean
 	handlePage: React.Dispatch<React.SetStateAction<number>>
@@ -73,7 +73,7 @@ type Props = {
 	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
 	projects: MonitoringArea[]
 	selectedId: number | null
-	setCoordinates: React.Dispatch<React.SetStateAction<[number, number][][]>>
+	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
 	setFiltedProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
 	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 	setProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
@@ -85,6 +85,7 @@ type Props = {
 
 export default function Menu(props: Props): JSX.Element {
 	const {
+		biorbitContract,
 		coordinates,
 		filtedProjects,
 		handlePage,
@@ -105,25 +106,13 @@ export default function Menu(props: Props): JSX.Element {
 		total
 	} = props
 
-	const { address } = useAccount()
+	const protectedAreasTabRef = useRef<HTMLButtonElement | null>(null)
 
 	const [enableSearcher, setEnableSearcher] = useState<boolean>(true)
 	const [extensionAreaOption, setExtensionAreaOption] =
 		useState<string>('Polygon')
-	const protectedAreasTabRef = useRef<HTMLButtonElement>(null)
 
-	const {
-		data,
-		isLoading: onMintProjectLoading,
-		isSuccess: onMintProjecSuccess,
-		isError: onMintProjectError,
-		write: onMintProject
-	} = useContractWrite({
-		address: `0x${BIOrbitContractJson.address.substring(2)}`,
-		abi: BIOrbitContractJson.abi,
-		functionName: 'mintProject',
-		gas: BigInt(1000000)
-	})
+	const { address } = useAccount()
 
 	const onMonitorTab = (): void => {
 		if (extensionAreaOption === 'Polygon') {
@@ -156,7 +145,7 @@ export default function Menu(props: Props): JSX.Element {
 	function CoordinatesFieldArrayWrapper({
 		coordinates
 	}: {
-		coordinates: number[][][]
+		coordinates: number[][]
 	}): JSX.Element {
 		const formik = useFormikContext()
 
@@ -187,11 +176,7 @@ export default function Menu(props: Props): JSX.Element {
 		form
 	}: CoordinatesFieldArrayProps): JSX.Element {
 		useEffect(() => {
-			if (
-				coordinates.length !== 0 &&
-				coordinates[0].length !== 0 &&
-				coordinates[0][0].length !== 0
-			) {
+			if (coordinates.length !== 0) {
 				form.setFieldValue('coordinates', coordinates)
 			}
 		}, [coordinates])
@@ -245,19 +230,6 @@ export default function Menu(props: Props): JSX.Element {
 			setShowDrawControl(false)
 		}
 	}, [address])
-
-	useEffect(() => {
-		if (data) {
-			listenTransaction(data.hash, setSincronized)
-		}
-	}, [onMintProjecSuccess])
-
-	useEffect(() => {
-		console.log('onMintProjectError: ', onMintProjectError)
-		if (onMintProjectError) {
-			setIsLoading(false)
-		}
-	}, [onMintProjectError])
 
 	return (
 		<Flex
@@ -335,9 +307,13 @@ export default function Menu(props: Props): JSX.Element {
 							<>
 								{filtedProjects && (
 									<Results
+										biorbitContract={biorbitContract}
 										handleSelect={handleSelect}
+										isLoading={isLoading}
 										projects={filtedProjects}
 										selectedId={selectedId}
+										setIsLoading={setIsLoading}
+										setSincronized={setSincronized}
 									/>
 								)}
 								{projects && projects.length > 0 && (
@@ -377,23 +353,31 @@ export default function Menu(props: Props): JSX.Element {
 										}>
 									) => {
 										if (coordinates.length !== 0) {
-											setTimeout(() => {
+											setTimeout(async () => {
 												setIsLoading(true)
 												const extension: string =
 													calculateEarthPolygonArea(coordinates)
 
-												const footprint: string[][][] =
+												const footprint: string[][] =
 													convertArrayToString(coordinates)
 
-												onMintProject({
-													args: [
-														values.name,
-														values.description,
-														extension,
-														footprint,
-														values.country
-													]
-												})
+												if (biorbitContract) {
+													try {
+														const mintTx: ethers.ContractTransaction =
+															await biorbitContract.mintProject(
+																values.name,
+																values.description,
+																extension,
+																footprint,
+																values.country
+															)
+														await mintTx.wait(1)
+														setSincronized(false)
+													} catch (error) {
+														console.error(error)
+														setIsLoading(false)
+													}
+												}
 
 												actions.setSubmitting(false)
 												actions.resetForm()
@@ -473,14 +457,13 @@ export default function Menu(props: Props): JSX.Element {
 													</HStack>
 												</RadioGroup>
 												{coordinates?.length !== 0 &&
-													coordinates[0]?.length !== 0 &&
-													coordinates[0][0]?.length !== 0 && (
+													coordinates[0]?.length !== 0 && (
 														<TableContainer mt={2} overflow='hidden'>
 															<Table size='sm' marginBottom={2}>
 																<Tbody>
 																	{coordinates &&
-																		coordinates[0]?.length !== 0 &&
-																		coordinates[0]?.map(
+																		coordinates.length !== 0 &&
+																		coordinates.map(
 																			(
 																				coordinate: number[],
 																				index: number
@@ -577,13 +560,14 @@ function validateCountry(value: string): string | undefined {
 	return error
 }
 
-function calculateEarthPolygonArea(coordinates: number[][][]): string {
+function calculateEarthPolygonArea(coordinates: number[][]): string {
 	const R: number = 6371 // Radius of the Earth in kilometers
 	const degreeToRadian: number = Math.PI / 180 // Conversion factor for degrees to radians
 
-	const points: number[][] = coordinates // Flatten the coordinates array and convert to radians
-		.flat()
-		.map(coord => [coord[0] * degreeToRadian, coord[1] * degreeToRadian])
+	const points: number[][] = coordinates.map(coord => [
+		coord[0] * degreeToRadian,
+		coord[1] * degreeToRadian
+	])
 
 	let total: number = 0
 	const len: number = points.length
@@ -601,42 +585,6 @@ function calculateEarthPolygonArea(coordinates: number[][][]): string {
 	return areaInHectares.toString() // round down to the nearest whole number
 }
 
-function convertArrayToString(arr: number[][][]): string[][][] {
-	return arr.map(innerArray =>
-		innerArray.map(pair => pair.map(num => num.toString()))
-	)
-}
-
-async function listenTransaction(
-	hash: string,
-	setState: React.Dispatch<React.SetStateAction<boolean>>
-): Promise<ethers.providers.TransactionReceipt | void> {
-	const provider = new ethers.providers.JsonRpcProvider(
-		'https://rpc-mumbai.maticvigil.com'
-	)
-	let transactionReceipt: ethers.providers.TransactionReceipt | null = null
-
-	do {
-		await new Promise(resolve => setTimeout(resolve, 3000))
-
-		transactionReceipt = await provider.getTransactionReceipt(hash)
-
-		if (transactionReceipt) {
-			if (transactionReceipt.status === 0) {
-				setState(false)
-				throw new Error('Transaction failed')
-			} else if (transactionReceipt.status === 1) {
-				console.log('Transaction succeeded')
-
-				setState(false)
-				return transactionReceipt
-			} else {
-				console.log('Transaction status unknown')
-			}
-		} else {
-			console.log('Transaction not found')
-		}
-	} while (!transactionReceipt)
-
-	console.log('Unable to determine transaction status')
+function convertArrayToString(arr: number[][]): string[][] {
+	return arr.map(pair => pair.map(num => num.toString()))
 }

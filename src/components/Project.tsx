@@ -17,6 +17,8 @@ import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { useEffect, useRef } from 'react'
 import ReactReadMoreReadLess from 'react-read-more-read-less'
 import scrollIntoView from 'scroll-into-view'
+import { TrnasferModal } from './TransferModal'
+import { BIOrbit } from '../../@types/typechain-types'
 
 interface Coordinates {
 	latitude: string
@@ -24,13 +26,25 @@ interface Coordinates {
 }
 
 type Props = {
+	biorbitContract: BIOrbit | null
+	isLoading: boolean
 	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
 	project: MonitoringArea
 	selectedId: number | null
+	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+	setSincronized: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export function Project(props: Props): JSX.Element {
-	const { handleSelect, project, selectedId } = props
+	const {
+		biorbitContract,
+		isLoading,
+		handleSelect,
+		project,
+		selectedId,
+		setIsLoading,
+		setSincronized
+	} = props
 
 	const elRef = useRef<HTMLDivElement | null>(null)
 
@@ -108,11 +122,25 @@ export function Project(props: Props): JSX.Element {
 					</Tbody>
 				</Table>
 			</TableContainer>
-			<Text fontSize={'xs'} mt={2} float='right'>
-				<Link size='sm' href={project.uri} isExternal>
-					View on IPFS <ExternalLinkIcon />
-				</Link>
-			</Text>
+			<Box
+				mt={2}
+				display={'flex'}
+				alignItems={'center'}
+				justifyContent={'space-between'}
+			>
+				<TrnasferModal
+					biorbitContract={biorbitContract}
+					isLoading={isLoading}
+					project={project}
+					setIsLoading={setIsLoading}
+					setSincronized={setSincronized}
+				/>
+				<Text fontSize={'xs'}>
+					<Link size='sm' href={project.uri} isExternal>
+						View on IPFS <ExternalLinkIcon />
+					</Link>
+				</Text>
+			</Box>
 		</Box>
 	)
 }
@@ -187,19 +215,14 @@ function getTagComponent(state: number): JSX.Element {
 	}
 }
 
-function getLastCoordinates(footprint: Footprint[][]): Coordinates {
+function getLastCoordinates(footprint: Footprint[]): Coordinates {
 	if (footprint.length === 0) {
 		return { latitude: '0', longitude: '0' }
 	}
 
-	const lastLevel1 = footprint[footprint.length - 1]
-	if (lastLevel1.length === 0) {
-		return { latitude: '0', longitude: '0' }
-	}
-
-	const lastLevel2 = lastLevel1[lastLevel1.length - 1]
+	const lastFootprint = footprint[footprint.length - 1]
 	return {
-		latitude: lastLevel2.latitude,
-		longitude: lastLevel2.longitude
+		latitude: lastFootprint.latitude,
+		longitude: lastFootprint.longitude
 	}
 }
