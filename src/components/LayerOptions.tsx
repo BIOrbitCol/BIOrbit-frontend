@@ -1,19 +1,75 @@
 import { ButtonGroup, Button } from '@chakra-ui/react'
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
+import { Feature, GeoJsonProperties, Geometry } from 'geojson'
+import * as L from 'leaflet'
+
+interface Option {
+	label: string
+	name: string
+}
 
 type Props = {
-	options: {
-		label: string
-		name: string
-	}[]
+	geoJsonProject: Feature<Geometry, GeoJsonProperties> | null
+	options: Option[]
+	mapRef: React.MutableRefObject<L.Map | null>
 	setOption: Dispatch<SetStateAction<string>>
 	activeOption: string
 	themeColor: string
 }
 
 export function LayerOptions(props: Props) {
-	const { options, setOption, activeOption, themeColor } = props
-	let color = themeColor || 'green.400'
+	const {
+		activeOption,
+		geoJsonProject,
+		mapRef,
+		options,
+		setOption,
+		themeColor
+	} = props
+	let color = themeColor || 'blue.400'
+
+	const imageHandle = (option: string) => {
+		if (mapRef.current) {
+			// Remove existing image overlays
+			mapRef.current.eachLayer(layer => {
+				if (layer instanceof L.ImageOverlay) {
+					mapRef.current?.removeLayer(layer)
+				}
+			})
+		}
+		if (option === 'NDVI' && geoJsonProject && geoJsonProject.properties) {
+			const geoLayer = L.geoJSON(geoJsonProject)
+			const imageOverlay = L.imageOverlay(
+				geoJsonProject.properties.ndvi,
+				geoLayer.getBounds(),
+				{
+					opacity: 0.8,
+					interactive: false
+				}
+			)
+			if (mapRef.current) {
+				imageOverlay.addTo(mapRef.current)
+			}
+		} else if (
+			option === 'RGB' &&
+			geoJsonProject &&
+			geoJsonProject.properties
+		) {
+			const geoLayer = L.geoJSON(geoJsonProject)
+			const imageOverlay = L.imageOverlay(
+				geoJsonProject.properties.rgb,
+				geoLayer.getBounds(),
+				{
+					opacity: 0.8,
+					interactive: false
+				}
+			)
+			if (mapRef.current) {
+				imageOverlay.addTo(mapRef.current)
+			}
+		}
+		setOption(option)
+	}
 
 	return (
 		<ButtonGroup
@@ -30,13 +86,13 @@ export function LayerOptions(props: Props) {
 			boxShadow='dark-lg'
 			overflow={'hidden'}
 		>
-			{options.map((option, ind) => (
+			{options.map((option: Option, index: number) => (
 				<Button
-					onClick={() => setOption(option.name)}
+					onClick={() => imageHandle(option.name)}
 					rounded={'none'}
 					key={option.name}
 					border={'none'}
-					borderRightWidth={ind < options.length - 1 ? '1px' : '0px'}
+					borderRightWidth={index < options.length - 1 ? '1px' : '0px'}
 					borderRightColor={'gray.300'}
 					borderRightStyle={'solid'}
 					backgroundColor={activeOption == option.name ? color : 'white'}

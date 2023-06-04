@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, GeoJSON, useMapEvents } from 'react-leaflet'
 import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { DrawControl } from './DrawControl'
 
-import L, { LatLngBounds, Layer } from 'leaflet'
+import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-defaulticon-compatibility'
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
@@ -13,7 +13,6 @@ import 'leaflet-draw/dist/leaflet.draw.css'
 import 'leaflet-measure'
 import 'leaflet-measure/dist/leaflet-measure.js'
 import 'leaflet-measure/dist/leaflet-measure.css'
-import { Alert, AlertIcon, Box, Center, VStack } from '@chakra-ui/react'
 import LayerOptions from './LayerOptions'
 import { Feature, GeoJsonProperties, Geometry } from 'geojson'
 import { useAccount } from 'wagmi'
@@ -51,8 +50,12 @@ export default function Map(props: Props) {
 		GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>[]
 	>([])
 
-	const [isHidden, setIsHidden] = useState<boolean>(true)
+	const [geoJsonProject, setGeoJsonProject] = useState<Feature<
+		Geometry,
+		GeoJsonProperties
+	> | null>(null)
 
+	const [isHidden, setIsHidden] = useState<boolean>(true)
 	const [layerName, setLayerName] = useState<string>('NDVI')
 
 	const { address } = useAccount()
@@ -122,7 +125,9 @@ export default function Map(props: Props) {
 				},
 				properties: {
 					id: project.id,
-					owner: project.owner
+					owner: project.owner,
+					ndvi: 'https://i5.walmartimages.com/asr/39eada0c-3501-44f0-b177-7c2ebabdda6d.b74931aade8174b928e6c8aa4129317c.jpeg?odnWidth=1000&odnHeight=1000&odnBg=ffffff',
+					rgb: 'https://cdn-icons-png.flaticon.com/512/110/110686.png'
 				}
 			}
 
@@ -160,20 +165,21 @@ export default function Map(props: Props) {
 	useEffect(() => {
 		if (selectedId) {
 			geoJsonData.forEach(
-				(data: Feature<Geometry, GeoJsonProperties>): void => {
-					if (data.properties && data.properties.id === selectedId) {
-						const geoLayer = L.geoJSON(data)
+				(geoJson: Feature<Geometry, GeoJsonProperties>): void => {
+					if (geoJson.properties && geoJson.properties.id === selectedId) {
+						const geoLayer = L.geoJSON(geoJson)
 						if (geoLayer) {
 							centerMap(geoLayer)
 							setIsHidden(false)
+							setGeoJsonProject(geoJson)
 						}
 					}
 				}
 			)
 			geoJsonDataNotOwned.forEach(
-				(data: Feature<Geometry, GeoJsonProperties>): void => {
-					if (data.properties && data.properties.id === selectedId) {
-						const geoLayer = L.geoJSON(data)
+				(geoJson: Feature<Geometry, GeoJsonProperties>): void => {
+					if (geoJson.properties && geoJson.properties.id === selectedId) {
+						const geoLayer = L.geoJSON(geoJson)
 						if (geoLayer) {
 							centerMap(geoLayer)
 							setIsHidden(true)
@@ -227,9 +233,11 @@ export default function Map(props: Props) {
 			))}
 			{!isHidden && (
 				<LayerOptions
+					activeOption={layerName}
+					geoJsonProject={geoJsonProject}
+					mapRef={mapRef}
 					options={layerNames}
 					setOption={setLayerName}
-					activeOption={layerName}
 					themeColor={'blue.500'}
 				/>
 			)}
