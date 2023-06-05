@@ -5,6 +5,11 @@ import { MapContainer, TileLayer, GeoJSON, useMapEvents } from 'react-leaflet'
 import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { DrawControl } from './DrawControl'
 
+interface Country {
+	name: string
+	flag: string
+}
+
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-defaulticon-compatibility'
@@ -18,6 +23,8 @@ import LayerOptions from './LayerOptions'
 import { Feature, GeoJsonProperties, Geometry } from 'geojson'
 import { useAccount } from 'wagmi'
 import { BIOrbit } from '../../@types/typechain-types'
+import countriesJson from '../assets/json/countries.json'
+
 import {
 	Button,
 	Modal,
@@ -105,7 +112,14 @@ export default function Map(props: Props) {
 					setSelectedId(geoJsonObject.properties.id)
 					if (geoJsonObject.properties.owner === address) {
 						geoJsonLayer.bindPopup(`
-            <button class="${style['chakra-button']} ${style['chakra-button-xs']} ${style['chakra-button-blue']}" onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))" >View</button>
+            <p>${geoJsonObject.properties.name} ${getCountryFlag(
+							geoJsonObject.properties.country
+						)} </p>
+            <button class="${style['chakra-button']} ${
+							style['chakra-button-xs']
+						} ${
+							style['chakra-button-blue']
+						}" onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))" >View</button>
           `)
 					} else {
 						geoJsonLayer.bindPopup(`<p>Locked 🔒️<p>`)
@@ -278,4 +292,13 @@ export default function Map(props: Props) {
 			/>
 		</MapContainer>
 	)
+}
+
+function getCountryFlag(countryName: string): string {
+	const countriesData = countriesJson
+	const country = countriesData.countries.find(
+		country => country.name.toLowerCase() === countryName.toLowerCase()
+	)
+
+	return country ? country.flag : 'Country not found'
 }
