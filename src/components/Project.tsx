@@ -115,12 +115,6 @@ export function Project(props: Props): JSX.Element {
 						</Tr>
 						<Tr>
 							<Td fontWeight={'bold'} fontSize={'xs'}>
-								Extension
-							</Td>
-							<Td fontSize={'xs'}>{project.extension} hectareas</Td>
-						</Tr>
-						<Tr>
-							<Td fontWeight={'bold'} fontSize={'xs'}>
 								Coordinates
 							</Td>
 							<Td fontSize={'xs'}>

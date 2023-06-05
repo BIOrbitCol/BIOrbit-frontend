@@ -30,23 +30,26 @@ export function StatsModal(props: Props) {
 		onOpen()
 	}
 	return (
-		<Modal onClose={onClose} size={size} isOpen={isOpen}>
-			<ModalOverlay />
-			<ModalContent>
-				<ModalHeader>Modal Title</ModalHeader>
-				<ModalCloseButton />
-				<ModalBody></ModalBody>
-				<ModalFooter>
-					{sizes.map(size => (
-						<Button
-							onClick={() => handleSizeClick(size)}
-							key={size}
-							m={4}
-						>{`Open ${size} Modal`}</Button>
-					))}
-					<Button onClick={onClose}>Close</Button>
-				</ModalFooter>
-			</ModalContent>
-		</Modal>
+		<>
+			{sizes.map(size => (
+				<Button
+					onClick={() => handleSizeClick(size)}
+					key={size}
+					m={4}
+				>{`Open ${size} Modal`}</Button>
+			))}
+
+			<Modal onClose={onClose} size={size} isOpen={isOpen}>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Modal Title</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>fsfs</ModalBody>
+					<ModalFooter>
+						<Button onClick={onClose}>Close</Button>
+					</ModalFooter>
+				</ModalContent>
+			</Modal>
+		</>
 	)
 }

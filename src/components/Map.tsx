@@ -85,8 +85,6 @@ export default function Map(props: Props) {
 		{ label: 'NDVI', name: 'NDVI' }
 	]
 
-	const onOpenHandler: () => void = () => onOpen()
-
 	const centerMap = (geoLayer: L.GeoJSON<any, Geometry>) => {
 		if (mapRef.current) {
 			const bounds = geoLayer.getBounds()
@@ -107,7 +105,7 @@ export default function Map(props: Props) {
 					setSelectedId(geoJsonObject.properties.id)
 					if (geoJsonObject.properties.owner === address) {
 						geoJsonLayer.bindPopup(`
-            <button class="${style['chakra-button']} ${style['chakra-button-xs']} ${style['chakra-button-blue']}" onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))">View</button>
+            <button class="${style['chakra-button']} ${style['chakra-button-xs']} ${style['chakra-button-blue']}" onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))" >View</button>
           `)
 					} else {
 						geoJsonLayer.bindPopup(`<p>Locked 🔒️<p>`)
@@ -191,6 +189,7 @@ export default function Map(props: Props) {
 							centerMap(geoLayer)
 							setIsHidden(false)
 							setGeoJsonProject(geoJson)
+							return
 						}
 					}
 				}
@@ -202,6 +201,7 @@ export default function Map(props: Props) {
 						if (geoLayer) {
 							centerMap(geoLayer)
 							setIsHidden(true)
+							return
 						}
 					}
 				}
