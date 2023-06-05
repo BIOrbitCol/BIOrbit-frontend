@@ -74,6 +74,10 @@ export default function Explorer(): JSX.Element {
 				await contract.getProjectsNotOwned()
 			)
 
+			console.log(
+				await contract.getDetectionDatesAndForestCoverExtensionsByProjectId(4)
+			)
+
 			if (Array.isArray(myProjects && myNotProjects)) {
 				setProjectsNotOwned(myNotProjects)
 				setProjects(myProjects)
@@ -126,6 +130,7 @@ export default function Explorer(): JSX.Element {
 				total={total}
 			/>
 			<MapWithNoSSR
+				biorbitContract={biorbitContract}
 				handleSelect={setSelectedId}
 				projects={filtedProjects}
 				projectsNotOwned={projectsNotOwned}

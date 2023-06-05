@@ -1,4 +1,5 @@
 import style from '../styles/Map.module.css'
+
 import { useEffect, useRef, useState } from 'react'
 import { MapContainer, TileLayer, GeoJSON, useMapEvents } from 'react-leaflet'
 import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
@@ -16,8 +17,22 @@ import 'leaflet-measure/dist/leaflet-measure.css'
 import LayerOptions from './LayerOptions'
 import { Feature, GeoJsonProperties, Geometry } from 'geojson'
 import { useAccount } from 'wagmi'
+import { BIOrbit } from '../../@types/typechain-types'
+import {
+	Button,
+	Modal,
+	ModalBody,
+	ModalCloseButton,
+	ModalContent,
+	ModalFooter,
+	ModalHeader,
+	ModalOverlay,
+	useDisclosure
+} from '@chakra-ui/react'
+import { StatsModal } from './StatsModal'
 
 type Props = {
+	biorbitContract: BIOrbit | null
 	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
 	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
 	projects: MonitoringArea[]
@@ -30,6 +45,7 @@ type Props = {
 
 export default function Map(props: Props) {
 	const {
+		biorbitContract,
 		handleSelect,
 		polygonRef,
 		projects,
@@ -58,6 +74,8 @@ export default function Map(props: Props) {
 	const [isHidden, setIsHidden] = useState<boolean>(true)
 	const [layerName, setLayerName] = useState<string>('NDVI')
 
+	const { isOpen, onOpen, onClose } = useDisclosure()
+
 	const { address } = useAccount()
 
 	// Define layer name options
@@ -66,6 +84,8 @@ export default function Map(props: Props) {
 		{ label: 'RGB', name: 'RGB' },
 		{ label: 'NDVI', name: 'NDVI' }
 	]
+
+	const onOpenHandler: () => void = () => onOpen()
 
 	const centerMap = (geoLayer: L.GeoJSON<any, Geometry>) => {
 		if (mapRef.current) {
@@ -86,9 +106,9 @@ export default function Map(props: Props) {
 				if (geoJsonObject.type === 'Feature') {
 					setSelectedId(geoJsonObject.properties.id)
 					if (geoJsonObject.properties.owner === address) {
-						geoJsonLayer.bindPopup(
-							`coordinates: <p>${JSON.stringify(geoJsonObject)}<p>`
-						)
+						geoJsonLayer.bindPopup(`
+            <button class="${style['chakra-button']} ${style['chakra-button-xs']} ${style['chakra-button-blue']}" onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))">View</button>
+          `)
 					} else {
 						geoJsonLayer.bindPopup(`<p>Locked 🔒️<p>`)
 					}
@@ -124,8 +144,7 @@ export default function Map(props: Props) {
 					]
 				},
 				properties: {
-					id: project.id,
-					owner: project.owner,
+					...project,
 					ndvi: 'https://i5.walmartimages.com/asr/39eada0c-3501-44f0-b177-7c2ebabdda6d.b74931aade8174b928e6c8aa4129317c.jpeg?odnWidth=1000&odnHeight=1000&odnBg=ffffff',
 					rgb: 'https://cdn-icons-png.flaticon.com/512/110/110686.png'
 				}
@@ -190,6 +209,16 @@ export default function Map(props: Props) {
 		}
 	}, [selectedId])
 
+	useEffect(() => {
+		const handlePopupButtonClick = () => onOpen()
+
+		window.addEventListener('popupButtonClick', handlePopupButtonClick)
+
+		return () => {
+			window.removeEventListener('popupButtonClick', handlePopupButtonClick)
+		}
+	}, [onOpen])
+
 	return (
 		<MapContainer
 			ref={mapRef}
@@ -241,6 +270,12 @@ export default function Map(props: Props) {
 					themeColor={'blue.500'}
 				/>
 			)}
+			<StatsModal
+				biorbitContract={biorbitContract}
+				isOpen={isOpen}
+				onOpen={onOpen}
+				onClose={onClose}
+			/>
 		</MapContainer>
 	)
 }
