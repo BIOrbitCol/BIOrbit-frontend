@@ -508,7 +508,9 @@ export default function Menu(props: Props): JSX.Element {
 															marginBottom={!form.errors.country && 4}
 														>
 															{countriesJson.countries.map(country => (
-																<option key={country}>{country.name}</option>
+																<option key={country.name}>
+																	{country.name}
+																</option>
 															))}
 														</Select>
 														<FormErrorMessage

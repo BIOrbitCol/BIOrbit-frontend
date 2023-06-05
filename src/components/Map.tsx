@@ -79,7 +79,7 @@ export default function Map(props: Props) {
 	> | null>(null)
 
 	const [isHidden, setIsHidden] = useState<boolean>(true)
-	const [layerName, setLayerName] = useState<string>('NDVI')
+	const [layerName, setLayerName] = useState<string>('Transparent')
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
 
