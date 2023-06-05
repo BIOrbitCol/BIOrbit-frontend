@@ -160,7 +160,7 @@ export default function Map(props: Props) {
 
 		setGeoJsonData(newGeoJsonData)
 		setGeoJsonDataNotOwned(newGeoJsonDataNotOwned)
-	}, [projects])
+	}, [address, projects])
 
 	useEffect(() => {
 		if (selectedId) {

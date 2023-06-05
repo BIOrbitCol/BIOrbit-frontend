@@ -235,7 +235,7 @@ export default function Menu(props: Props): JSX.Element {
 
 	return (
 		<Flex
-			width={'500px'}
+			width={'510px'}
 			height={'94vh'}
 			position='absolute'
 			top={'3vh'}

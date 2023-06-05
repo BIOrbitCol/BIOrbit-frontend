@@ -84,7 +84,16 @@ export function Project(props: Props): JSX.Element {
 					{project.name}
 				</Heading>
 				<Spacer />
-				{getTagComponent(project.state)}
+				<Box
+					display={'flex'}
+					alignItems={'center'}
+					justifyContent={'space-between'}
+				>
+					<Text marginRight={3} fontSize={'xs'}>
+						ID: {project.id}
+					</Text>
+					{getTagComponent(project.state)}
+				</Box>
 			</Flex>
 			<Text fontSize='xs'>
 				<ReactReadMoreReadLess
@@ -98,6 +107,12 @@ export function Project(props: Props): JSX.Element {
 			<TableContainer mt={2} overflow='hidden'>
 				<Table size='sm'>
 					<Tbody>
+						<Tr>
+							<Td fontWeight={'bold'} fontSize={'xs'}>
+								Extension
+							</Td>
+							<Td fontSize={'xs'}>{project.extension} hectareas</Td>
+						</Tr>
 						<Tr>
 							<Td fontWeight={'bold'} fontSize={'xs'}>
 								Extension

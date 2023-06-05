@@ -21,12 +21,10 @@ import { ChakraProvider } from '@chakra-ui/react'
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
 	[
-		...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'false'
-			? [celo, polygon]
-			: []),
+		...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'false' ? [polygon] : []),
 
 		...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true'
-			? [celoAlfajores, localhost, polygonMumbai]
+			? [polygonMumbai]
 			: [])
 	],
 	[publicProvider()]
