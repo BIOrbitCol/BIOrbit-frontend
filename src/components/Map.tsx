@@ -5,9 +5,22 @@ import { MapContainer, TileLayer, GeoJSON, useMapEvents } from 'react-leaflet'
 import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { DrawControl } from './DrawControl'
 
+interface Countries {
+	countries: Country[]
+}
+
 interface Country {
 	name: string
 	flag: string
+}
+type GeoJsonData = GeoJSON.Feature<
+	GeoJSON.Geometry,
+	GeoJSON.GeoJsonProperties
+> & {
+	properties: {
+		ndvi: string
+		rgb: string
+	} & MonitoringArea
 }
 
 import * as L from 'leaflet'
@@ -40,6 +53,7 @@ import { StatsModal } from './StatsModal'
 
 type Props = {
 	biorbitContract: BIOrbit | null
+	filtedProjects: MonitoringArea[]
 	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
 	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
 	projects: MonitoringArea[]
@@ -53,6 +67,7 @@ type Props = {
 export default function Map(props: Props) {
 	const {
 		biorbitContract,
+		filtedProjects,
 		handleSelect,
 		polygonRef,
 		projects,
@@ -65,9 +80,7 @@ export default function Map(props: Props) {
 
 	const mapRef = useRef<L.Map | null>(null)
 
-	const [geoJsonData, setGeoJsonData] = useState<
-		GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>[]
-	>([])
+	const [geoJsonData, setGeoJsonData] = useState<GeoJsonData[]>([])
 
 	const [geoJsonDataNotOwned, setGeoJsonDataNotOwned] = useState<
 		GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>[]
@@ -130,21 +143,15 @@ export default function Map(props: Props) {
 	}
 
 	useEffect(() => {
-		let newGeoJsonData: GeoJSON.Feature<
-			GeoJSON.Geometry,
-			GeoJSON.GeoJsonProperties
-		>[] = []
+		let newGeoJsonData: GeoJsonData[] = []
 
 		let newGeoJsonDataNotOwned: GeoJSON.Feature<
 			GeoJSON.Geometry,
 			GeoJSON.GeoJsonProperties
 		>[] = []
 
-		for (let project of projects) {
-			const geoJSON: GeoJSON.Feature<
-				GeoJSON.Geometry,
-				GeoJSON.GeoJsonProperties
-			> = {
+		for (let project of filtedProjects) {
+			const geoJSON: GeoJsonData = {
 				type: 'Feature',
 				geometry: {
 					type: 'Polygon',
@@ -165,61 +172,23 @@ export default function Map(props: Props) {
 			newGeoJsonData.push(geoJSON)
 		}
 
-		for (let projectNotOwned of projectsNotOwned) {
-			const geoJSON: GeoJSON.Feature<
-				GeoJSON.Geometry,
-				GeoJSON.GeoJsonProperties
-			> = {
-				type: 'Feature',
-				geometry: {
-					type: 'Polygon',
-					coordinates: [
-						projectNotOwned.footprint.map((footprint: Footprint) => [
-							parseFloat(footprint.longitude),
-							parseFloat(footprint.latitude)
-						])
-					]
-				},
-				properties: {
-					id: projectNotOwned.id,
-					owner: projectNotOwned.owner
-				}
-			}
-
-			newGeoJsonDataNotOwned.push(geoJSON)
-		}
-
 		setGeoJsonData(newGeoJsonData)
 		setGeoJsonDataNotOwned(newGeoJsonDataNotOwned)
 	}, [address, projects])
 
 	useEffect(() => {
 		if (selectedId) {
-			geoJsonData.forEach(
-				(geoJson: Feature<Geometry, GeoJsonProperties>): void => {
-					if (geoJson.properties && geoJson.properties.id === selectedId) {
-						const geoLayer = L.geoJSON(geoJson)
-						if (geoLayer) {
-							centerMap(geoLayer)
-							setIsHidden(false)
-							setGeoJsonProject(geoJson)
-							return
-						}
+			geoJsonData.forEach((geoJson: GeoJsonData): void => {
+				if (geoJson.properties && geoJson.properties.id === selectedId) {
+					const geoLayer = L.geoJSON(geoJson)
+					if (geoLayer) {
+						centerMap(geoLayer)
+						setIsHidden(false)
+						setGeoJsonProject(geoJson)
+						return
 					}
 				}
-			)
-			geoJsonDataNotOwned.forEach(
-				(geoJson: Feature<Geometry, GeoJsonProperties>): void => {
-					if (geoJson.properties && geoJson.properties.id === selectedId) {
-						const geoLayer = L.geoJSON(geoJson)
-						if (geoLayer) {
-							centerMap(geoLayer)
-							setIsHidden(true)
-							return
-						}
-					}
-				}
-			)
+			})
 		}
 	}, [selectedId])
 
@@ -250,7 +219,7 @@ export default function Map(props: Props) {
 				setCoordinates={setCoordinates}
 				showDrawControl={showDrawControl}
 			/>
-			{geoJsonData.map((data, index) => (
+			{geoJsonData.map((data: GeoJsonData, index: number) => (
 				<GeoJSON
 					key={index}
 					onEachFeature={onEachFeature}
@@ -258,22 +227,11 @@ export default function Map(props: Props) {
 					style={{
 						fillOpacity: 0.01,
 						weight: 2,
-						color: 'yellow'
+						color: data.properties.owner == address ? ' yellow' : 'red'
 					}}
 				/>
 			))}
-			{geoJsonDataNotOwned.map((data, index) => (
-				<GeoJSON
-					key={index}
-					onEachFeature={onEachFeature}
-					data={data}
-					style={{
-						fillOpacity: 0.01,
-						weight: 2,
-						color: 'red'
-					}}
-				/>
-			))}
+
 			{!isHidden && (
 				<LayerOptions
 					activeOption={layerName}
@@ -295,9 +253,10 @@ export default function Map(props: Props) {
 }
 
 function getCountryFlag(countryName: string): string {
-	const countriesData = countriesJson
+	const countriesData: Countries = countriesJson
 	const country = countriesData.countries.find(
-		country => country.name.toLowerCase() === countryName.toLowerCase()
+		(country: Country) =>
+			country.name.toLowerCase() === countryName.toLowerCase()
 	)
 
 	return country ? country.flag : 'Country not found'

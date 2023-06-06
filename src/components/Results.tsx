@@ -42,7 +42,7 @@ export function Results(props: Props) {
 								setSincronized={setSincronized}
 							/>
 						))}
-						{projectsNotOwned.map(
+						{/* {projectsNotOwned.map(
 							(projectNotOwned: MonitoringArea, index: number) => (
 								<Project
 									biorbitContract={biorbitContract}
@@ -55,7 +55,7 @@ export function Results(props: Props) {
 									setSincronized={setSincronized}
 								/>
 							)
-						)}
+						)} */}
 					</>
 				) : (
 					<Text size={'md'}>- No information -</Text>

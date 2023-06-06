@@ -81,8 +81,8 @@ export default function Explorer(): JSX.Element {
 
 				if (Array.isArray(myProjects && myNotProjects)) {
 					setProjectsNotOwned(myNotProjects)
-					setProjects(myProjects)
-					setFiltedProjects(myProjects)
+					setProjects([...myProjects, ...myNotProjects])
+					setFiltedProjects([...myProjects, ...myNotProjects])
 					setTotal(myProjects.length ? myProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
 				}
 			}
@@ -135,8 +135,9 @@ export default function Explorer(): JSX.Element {
 			/>
 			<MapWithNoSSR
 				biorbitContract={biorbitContract}
+				filtedProjects={filtedProjects}
 				handleSelect={setSelectedId}
-				projects={filtedProjects}
+				projects={projects}
 				projectsNotOwned={projectsNotOwned}
 				polygonRef={polygonRef}
 				selectedId={selectedId}
