@@ -39,18 +39,28 @@ export declare namespace BIOrbit {
     forestCoverExtension: string;
   };
 
+  export type RentInfoStruct = { renter: string; expiry: BigNumberish };
+
+  export type RentInfoStructOutput = [string, BigNumber] & {
+    renter: string;
+    expiry: BigNumber;
+  };
+
   export type ProjectStruct = {
     id: BigNumberish;
     uri: string;
     state: BigNumberish;
-    name: string;
-    description: string;
-    extension: string;
+    name: BytesLike;
+    description: BytesLike;
+    extension: BytesLike;
     footprint: string[][];
-    country: string;
+    country: BytesLike;
     owner: string;
     imageTimeSeries: BIOrbit.ImageTimeSeriesStruct;
     monitoring: BIOrbit.MonitoringStruct[];
+    isRent: boolean;
+    rentCost: BigNumberish;
+    rentInfo: BIOrbit.RentInfoStruct[];
   };
 
   export type ProjectStructOutput = [
@@ -64,7 +74,10 @@ export declare namespace BIOrbit {
     string,
     string,
     BIOrbit.ImageTimeSeriesStructOutput,
-    BIOrbit.MonitoringStructOutput[]
+    BIOrbit.MonitoringStructOutput[],
+    boolean,
+    BigNumber,
+    BIOrbit.RentInfoStructOutput[]
   ] & {
     id: BigNumber;
     uri: string;
@@ -77,33 +90,37 @@ export declare namespace BIOrbit {
     owner: string;
     imageTimeSeries: BIOrbit.ImageTimeSeriesStructOutput;
     monitoring: BIOrbit.MonitoringStructOutput[];
+    isRent: boolean;
+    rentCost: BigNumber;
+    rentInfo: BIOrbit.RentInfoStructOutput[];
   };
 
   export type ProjectLiteStruct = {
     id: BigNumberish;
-    uri: string;
     state: BigNumberish;
-    name: string;
-    description: string;
-    extension: string;
+    name: BytesLike;
+    description: BytesLike;
+    extension: BytesLike;
     footprint: string[][];
-    country: string;
+    country: BytesLike;
     owner: string;
+    isRent: boolean;
+    rentCost: BigNumberish;
   };
 
   export type ProjectLiteStructOutput = [
     BigNumber,
-    string,
     number,
     string,
     string,
     string,
     string[][],
     string,
-    string
+    string,
+    boolean,
+    BigNumber
   ] & {
     id: BigNumber;
-    uri: string;
     state: number;
     name: string;
     description: string;
@@ -111,6 +128,8 @@ export declare namespace BIOrbit {
     footprint: string[][];
     country: string;
     owner: string;
+    isRent: boolean;
+    rentCost: BigNumber;
   };
 }
 
@@ -120,18 +139,25 @@ export interface BIOrbitInterface extends utils.Interface {
     "Projects(uint256)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
+    "burnProject(uint256)": FunctionFragment;
+    "getActiveRentingProjects()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "getDetectionDatesAndForestCoverExtensionsByProjectId(uint256)": FunctionFragment;
-    "getProjects()": FunctionFragment;
+    "getLatestData()": FunctionFragment;
     "getProjectsByOwner()": FunctionFragment;
-    "getProjectsNotOwned()": FunctionFragment;
+    "getProjectsNotOwnedWithoutRent()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "mintProject(string,string,string,string[][],string)": FunctionFragment;
+    "mintProject(bytes32,bytes32,bytes32,string[][],bytes32,bool)": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "projectIdCounter()": FunctionFragment;
+    "rentProject(uint256)": FunctionFragment;
+    "rentTime()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setDescription(uint256,bytes32)": FunctionFragment;
+    "setIsRent(uint256)": FunctionFragment;
+    "setName(uint256,bytes32)": FunctionFragment;
+    "setRentCost(uint256)": FunctionFragment;
     "setTokenURI(string[],string[],uint256,string)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
@@ -149,15 +175,19 @@ export interface BIOrbitInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(
+    functionFragment: "burnProject",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getActiveRentingProjects",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getDetectionDatesAndForestCoverExtensionsByProjectId",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getProjects",
+    functionFragment: "getLatestData",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -165,7 +195,7 @@ export interface BIOrbitInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getProjectsNotOwned",
+    functionFragment: "getProjectsNotOwnedWithoutRent",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -174,7 +204,7 @@ export interface BIOrbitInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "mintProject",
-    values: [string, string, string, string[][], string]
+    values: [BytesLike, BytesLike, BytesLike, string[][], BytesLike, boolean]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -186,12 +216,33 @@ export interface BIOrbitInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "rentProject",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "rentTime", values?: undefined): string;
+  encodeFunctionData(
     functionFragment: "safeTransferFrom",
     values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setDescription",
+    values: [BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setIsRent",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setName",
+    values: [BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRentCost",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setTokenURI",
@@ -215,15 +266,19 @@ export interface BIOrbitInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "burnProject",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getActiveRentingProjects",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getDetectionDatesAndForestCoverExtensionsByProjectId",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getProjects",
+    functionFragment: "getLatestData",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -231,7 +286,7 @@ export interface BIOrbitInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getProjectsNotOwned",
+    functionFragment: "getProjectsNotOwnedWithoutRent",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -249,11 +304,26 @@ export interface BIOrbitInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "rentProject",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "rentTime", data: BytesLike): Result;
+  decodeFunctionResult(
     functionFragment: "safeTransferFrom",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setDescription",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "setIsRent", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setName", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setRentCost",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -276,7 +346,7 @@ export interface BIOrbitInterface extends utils.Interface {
     "ApprovalForAll(address,address,bool)": EventFragment;
     "BatchMetadataUpdate(uint256,uint256)": EventFragment;
     "MetadataUpdate(uint256)": EventFragment;
-    "ProjectCreated(uint256,uint8,string,string,string,string[][],string,address)": EventFragment;
+    "ProjectCreated(uint256,uint8,bytes32,bytes32,bytes32,string[][],bytes32,address,bool,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
@@ -318,7 +388,18 @@ export type MetadataUpdateEvent = TypedEvent<
 export type MetadataUpdateEventFilter = TypedEventFilter<MetadataUpdateEvent>;
 
 export type ProjectCreatedEvent = TypedEvent<
-  [BigNumber, number, string, string, string, string[][], string, string],
+  [
+    BigNumber,
+    number,
+    string,
+    string,
+    string,
+    string[][],
+    string,
+    string,
+    boolean,
+    BigNumber
+  ],
   {
     id: BigNumber;
     state: number;
@@ -328,6 +409,8 @@ export type ProjectCreatedEvent = TypedEvent<
     footprint: string[][];
     country: string;
     owner: string;
+    isRent: boolean;
+    rent: BigNumber;
   }
 >;
 
@@ -381,7 +464,9 @@ export interface BIOrbit extends BaseContract {
         string,
         string,
         string,
-        BIOrbit.ImageTimeSeriesStructOutput
+        BIOrbit.ImageTimeSeriesStructOutput,
+        boolean,
+        BigNumber
       ] & {
         id: BigNumber;
         uri: string;
@@ -392,6 +477,8 @@ export interface BIOrbit extends BaseContract {
         country: string;
         owner: string;
         imageTimeSeries: BIOrbit.ImageTimeSeriesStructOutput;
+        isRent: boolean;
+        rentCost: BigNumber;
       }
     >;
 
@@ -403,25 +490,27 @@ export interface BIOrbit extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    burnProject(
+      _projectId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    getActiveRentingProjects(
+      overrides?: CallOverrides
+    ): Promise<[BIOrbit.ProjectStructOutput[]]>;
+
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    getDetectionDatesAndForestCoverExtensionsByProjectId(
-      _projectId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string[][]]>;
-
-    getProjects(
-      overrides?: CallOverrides
-    ): Promise<[BIOrbit.ProjectStructOutput[]]>;
+    getLatestData(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getProjectsByOwner(
       overrides?: CallOverrides
     ): Promise<[BIOrbit.ProjectStructOutput[]]>;
 
-    getProjectsNotOwned(
+    getProjectsNotOwnedWithoutRent(
       overrides?: CallOverrides
     ): Promise<[BIOrbit.ProjectLiteStructOutput[]]>;
 
@@ -432,11 +521,12 @@ export interface BIOrbit extends BaseContract {
     ): Promise<[boolean]>;
 
     mintProject(
-      _name: string,
-      _description: string,
-      _extension: string,
+      _name: BytesLike,
+      _description: BytesLike,
+      _extension: BytesLike,
       _footprint: string[][],
-      _country: string,
+      _country: BytesLike,
+      _isRent: boolean,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -451,17 +541,24 @@ export interface BIOrbit extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { _value: BigNumber }>;
 
+    rentProject(
+      _projectId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    rentTime(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     "safeTransferFrom(address,address,uint256)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       _data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -472,11 +569,33 @@ export interface BIOrbit extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setDescription(
+      _projectId: BigNumberish,
+      _description: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setIsRent(
+      _projectId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setName(
+      _projectId: BigNumberish,
+      _name: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setRentCost(
+      _projectId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setTokenURI(
       _detectionDate: string[],
       _forestCoverExtension: string[],
       _projectId: BigNumberish,
-      _tokenURI: string,
+      _projectURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -488,14 +607,14 @@ export interface BIOrbit extends BaseContract {
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
     tokenURI(
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
     transferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -513,7 +632,9 @@ export interface BIOrbit extends BaseContract {
       string,
       string,
       string,
-      BIOrbit.ImageTimeSeriesStructOutput
+      BIOrbit.ImageTimeSeriesStructOutput,
+      boolean,
+      BigNumber
     ] & {
       id: BigNumber;
       uri: string;
@@ -524,6 +645,8 @@ export interface BIOrbit extends BaseContract {
       country: string;
       owner: string;
       imageTimeSeries: BIOrbit.ImageTimeSeriesStructOutput;
+      isRent: boolean;
+      rentCost: BigNumber;
     }
   >;
 
@@ -535,25 +658,27 @@ export interface BIOrbit extends BaseContract {
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+  burnProject(
+    _projectId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  getActiveRentingProjects(
+    overrides?: CallOverrides
+  ): Promise<BIOrbit.ProjectStructOutput[]>;
+
   getApproved(
     tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getDetectionDatesAndForestCoverExtensionsByProjectId(
-    _projectId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string[][]>;
-
-  getProjects(
-    overrides?: CallOverrides
-  ): Promise<BIOrbit.ProjectStructOutput[]>;
+  getLatestData(overrides?: CallOverrides): Promise<BigNumber>;
 
   getProjectsByOwner(
     overrides?: CallOverrides
   ): Promise<BIOrbit.ProjectStructOutput[]>;
 
-  getProjectsNotOwned(
+  getProjectsNotOwnedWithoutRent(
     overrides?: CallOverrides
   ): Promise<BIOrbit.ProjectLiteStructOutput[]>;
 
@@ -564,11 +689,12 @@ export interface BIOrbit extends BaseContract {
   ): Promise<boolean>;
 
   mintProject(
-    _name: string,
-    _description: string,
-    _extension: string,
+    _name: BytesLike,
+    _description: BytesLike,
+    _extension: BytesLike,
     _footprint: string[][],
-    _country: string,
+    _country: BytesLike,
+    _isRent: boolean,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -578,17 +704,24 @@ export interface BIOrbit extends BaseContract {
 
   projectIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
+  rentProject(
+    _projectId: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  rentTime(overrides?: CallOverrides): Promise<BigNumber>;
+
   "safeTransferFrom(address,address,uint256)"(
     from: string,
     to: string,
-    tokenId: BigNumberish,
+    _projectId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   "safeTransferFrom(address,address,uint256,bytes)"(
     from: string,
     to: string,
-    tokenId: BigNumberish,
+    _projectId: BigNumberish,
     _data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -599,11 +732,33 @@ export interface BIOrbit extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setDescription(
+    _projectId: BigNumberish,
+    _description: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setIsRent(
+    _projectId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setName(
+    _projectId: BigNumberish,
+    _name: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setRentCost(
+    _projectId: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setTokenURI(
     _detectionDate: string[],
     _forestCoverExtension: string[],
     _projectId: BigNumberish,
-    _tokenURI: string,
+    _projectURI: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -614,12 +769,15 @@ export interface BIOrbit extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  tokenURI(
+    _projectId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   transferFrom(
     from: string,
     to: string,
-    tokenId: BigNumberish,
+    _projectId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -637,7 +795,9 @@ export interface BIOrbit extends BaseContract {
         string,
         string,
         string,
-        BIOrbit.ImageTimeSeriesStructOutput
+        BIOrbit.ImageTimeSeriesStructOutput,
+        boolean,
+        BigNumber
       ] & {
         id: BigNumber;
         uri: string;
@@ -648,6 +808,8 @@ export interface BIOrbit extends BaseContract {
         country: string;
         owner: string;
         imageTimeSeries: BIOrbit.ImageTimeSeriesStructOutput;
+        isRent: boolean;
+        rentCost: BigNumber;
       }
     >;
 
@@ -659,25 +821,27 @@ export interface BIOrbit extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    burnProject(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    getActiveRentingProjects(
+      overrides?: CallOverrides
+    ): Promise<BIOrbit.ProjectStructOutput[]>;
+
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    getDetectionDatesAndForestCoverExtensionsByProjectId(
-      _projectId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string[][]>;
-
-    getProjects(
-      overrides?: CallOverrides
-    ): Promise<BIOrbit.ProjectStructOutput[]>;
+    getLatestData(overrides?: CallOverrides): Promise<BigNumber>;
 
     getProjectsByOwner(
       overrides?: CallOverrides
     ): Promise<BIOrbit.ProjectStructOutput[]>;
 
-    getProjectsNotOwned(
+    getProjectsNotOwnedWithoutRent(
       overrides?: CallOverrides
     ): Promise<BIOrbit.ProjectLiteStructOutput[]>;
 
@@ -688,11 +852,12 @@ export interface BIOrbit extends BaseContract {
     ): Promise<boolean>;
 
     mintProject(
-      _name: string,
-      _description: string,
-      _extension: string,
+      _name: BytesLike,
+      _description: BytesLike,
+      _extension: BytesLike,
       _footprint: string[][],
-      _country: string,
+      _country: BytesLike,
+      _isRent: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -702,17 +867,24 @@ export interface BIOrbit extends BaseContract {
 
     projectIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
+    rentProject(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    rentTime(overrides?: CallOverrides): Promise<BigNumber>;
+
     "safeTransferFrom(address,address,uint256)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       _data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -723,11 +895,33 @@ export interface BIOrbit extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setDescription(
+      _projectId: BigNumberish,
+      _description: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setIsRent(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setName(
+      _projectId: BigNumberish,
+      _name: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setRentCost(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setTokenURI(
       _detectionDate: string[],
       _forestCoverExtension: string[],
       _projectId: BigNumberish,
-      _tokenURI: string,
+      _projectURI: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -738,12 +932,15 @@ export interface BIOrbit extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    tokenURI(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     transferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -783,7 +980,7 @@ export interface BIOrbit extends BaseContract {
     "MetadataUpdate(uint256)"(_tokenId?: null): MetadataUpdateEventFilter;
     MetadataUpdate(_tokenId?: null): MetadataUpdateEventFilter;
 
-    "ProjectCreated(uint256,uint8,string,string,string,string[][],string,address)"(
+    "ProjectCreated(uint256,uint8,bytes32,bytes32,bytes32,string[][],bytes32,address,bool,uint256)"(
       id?: null,
       state?: null,
       name?: null,
@@ -791,7 +988,9 @@ export interface BIOrbit extends BaseContract {
       extension?: null,
       footprint?: null,
       country?: null,
-      owner?: null
+      owner?: null,
+      isRent?: null,
+      rent?: null
     ): ProjectCreatedEventFilter;
     ProjectCreated(
       id?: null,
@@ -801,7 +1000,9 @@ export interface BIOrbit extends BaseContract {
       extension?: null,
       footprint?: null,
       country?: null,
-      owner?: null
+      owner?: null,
+      isRent?: null,
+      rent?: null
     ): ProjectCreatedEventFilter;
 
     "Transfer(address,address,uint256)"(
@@ -827,21 +1028,25 @@ export interface BIOrbit extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    burnProject(
+      _projectId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    getActiveRentingProjects(overrides?: CallOverrides): Promise<BigNumber>;
+
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getDetectionDatesAndForestCoverExtensionsByProjectId(
-      _projectId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getProjects(overrides?: CallOverrides): Promise<BigNumber>;
+    getLatestData(overrides?: CallOverrides): Promise<BigNumber>;
 
     getProjectsByOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getProjectsNotOwned(overrides?: CallOverrides): Promise<BigNumber>;
+    getProjectsNotOwnedWithoutRent(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     isApprovedForAll(
       owner: string,
@@ -850,11 +1055,12 @@ export interface BIOrbit extends BaseContract {
     ): Promise<BigNumber>;
 
     mintProject(
-      _name: string,
-      _description: string,
-      _extension: string,
+      _name: BytesLike,
+      _description: BytesLike,
+      _extension: BytesLike,
       _footprint: string[][],
-      _country: string,
+      _country: BytesLike,
+      _isRent: boolean,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -867,17 +1073,24 @@ export interface BIOrbit extends BaseContract {
 
     projectIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
+    rentProject(
+      _projectId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    rentTime(overrides?: CallOverrides): Promise<BigNumber>;
+
     "safeTransferFrom(address,address,uint256)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       _data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -888,11 +1101,33 @@ export interface BIOrbit extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setDescription(
+      _projectId: BigNumberish,
+      _description: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setIsRent(
+      _projectId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setName(
+      _projectId: BigNumberish,
+      _name: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setRentCost(
+      _projectId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setTokenURI(
       _detectionDate: string[],
       _forestCoverExtension: string[],
       _projectId: BigNumberish,
-      _tokenURI: string,
+      _projectURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -904,14 +1139,14 @@ export interface BIOrbit extends BaseContract {
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
     tokenURI(
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     transferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -933,23 +1168,27 @@ export interface BIOrbit extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    burnProject(
+      _projectId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getActiveRentingProjects(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getDetectionDatesAndForestCoverExtensionsByProjectId(
-      _projectId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getProjects(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getLatestData(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getProjectsByOwner(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getProjectsNotOwned(
+    getProjectsNotOwnedWithoutRent(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -960,11 +1199,12 @@ export interface BIOrbit extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     mintProject(
-      _name: string,
-      _description: string,
-      _extension: string,
+      _name: BytesLike,
+      _description: BytesLike,
+      _extension: BytesLike,
       _footprint: string[][],
-      _country: string,
+      _country: BytesLike,
+      _isRent: boolean,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -977,17 +1217,24 @@ export interface BIOrbit extends BaseContract {
 
     projectIdCounter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    rentProject(
+      _projectId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    rentTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     "safeTransferFrom(address,address,uint256)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       _data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -998,11 +1245,33 @@ export interface BIOrbit extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setDescription(
+      _projectId: BigNumberish,
+      _description: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setIsRent(
+      _projectId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setName(
+      _projectId: BigNumberish,
+      _name: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setRentCost(
+      _projectId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setTokenURI(
       _detectionDate: string[],
       _forestCoverExtension: string[],
       _projectId: BigNumberish,
-      _tokenURI: string,
+      _projectURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1014,14 +1283,14 @@ export interface BIOrbit extends BaseContract {
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     tokenURI(
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     transferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      _projectId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

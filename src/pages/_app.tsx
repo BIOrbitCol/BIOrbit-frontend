@@ -24,7 +24,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 		...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'false' ? [polygon] : []),
 
 		...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true'
-			? [polygonMumbai]
+			? [localhost, polygonMumbai]
 			: [])
 	],
 	[publicProvider()]

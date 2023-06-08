@@ -48,12 +48,16 @@ import { useAccount } from 'wagmi'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
 import { Results } from './Results'
-import { Monitoring, MonitoringArea } from '@/models/monitoring-area.model'
+import {
+	Monitoring,
+	MonitoringArea
+} from '@/pages/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
 import { useContractWrite } from 'wagmi'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
 import { ethers } from 'ethers'
 import { BIOrbit } from '../../@types/typechain-types'
+import { getRandomValues } from 'crypto'
 
 type CoordinatesFieldArrayProps = {
 	coordinates: number[][]
@@ -113,6 +117,8 @@ export default function Menu(props: Props): JSX.Element {
 	const [enableSearcher, setEnableSearcher] = useState<boolean>(true)
 	const [extensionAreaOption, setExtensionAreaOption] =
 		useState<string>('Polygon')
+	const [extension, setExtension] = useState<string>('')
+	const [value, setValue] = useState('')
 
 	const { address } = useAccount()
 
@@ -179,6 +185,9 @@ export default function Menu(props: Props): JSX.Element {
 	}: CoordinatesFieldArrayProps): JSX.Element {
 		useEffect(() => {
 			if (coordinates.length !== 0) {
+				let extension: string = calculateEarthPolygonArea(coordinates)
+				extension = Math.floor(parseFloat(extension)).toLocaleString()
+				setExtension(extension)
 				form.setFieldValue('coordinates', coordinates)
 			}
 		}, [coordinates])
@@ -339,7 +348,8 @@ export default function Menu(props: Props): JSX.Element {
 										name: '',
 										description: '',
 										coordinates: [],
-										country: ''
+										country: '',
+										isRent: ''
 									}}
 									onSubmit={(
 										values: {
@@ -347,18 +357,20 @@ export default function Menu(props: Props): JSX.Element {
 											description: string
 											coordinates: never[]
 											country: string
+											isRent: string
 										},
 										actions: FormikHelpers<{
 											name: string
 											description: string
 											coordinates: never[]
 											country: string
+											isRent: string
 										}>
 									) => {
 										if (coordinates.length !== 0) {
 											setTimeout(async () => {
 												setIsLoading(true)
-												const extension: string =
+												const extensionString: string =
 													calculateEarthPolygonArea(coordinates)
 
 												const footprint: string[][] =
@@ -366,13 +378,26 @@ export default function Menu(props: Props): JSX.Element {
 
 												if (biorbitContract) {
 													try {
+														const maticUSD: ethers.BigNumber =
+															await biorbitContract.getLatestData()
+														const rentCost: ethers.BigNumber =
+															maticUSD.mul(extension)
+
 														const mintTx: ethers.ContractTransaction =
 															await biorbitContract.mintProject(
-																values.name,
-																values.description,
-																extension,
+																ethers.utils.formatBytes32String(values.name),
+																ethers.utils.formatBytes32String(
+																	values.description
+																),
+																ethers.utils.formatBytes32String(
+																	extensionString
+																),
 																footprint,
-																values.country
+																ethers.utils.formatBytes32String(
+																	values.country
+																),
+																values.isRent === 'Yes' ? true : false,
+																{ gasLimit: 2500000, value: rentCost }
 															)
 														await mintTx.wait(1)
 														setSincronized(false)
@@ -445,7 +470,7 @@ export default function Menu(props: Props): JSX.Element {
 													Area extension
 												</FormLabel>
 												<RadioGroup
-													marginBottom={2}
+													marginBottom={4}
 													onChange={setExtensionAreaOption}
 													value={extensionAreaOption}
 												>
@@ -461,8 +486,8 @@ export default function Menu(props: Props): JSX.Element {
 												</RadioGroup>
 												{coordinates?.length !== 0 &&
 													coordinates[0]?.length !== 0 && (
-														<TableContainer mt={2} overflow='hidden'>
-															<Table size='sm' marginBottom={2}>
+														<TableContainer mt={4} overflow='hidden'>
+															<Table size='sm' marginBottom={4}>
 																<Tbody>
 																	{coordinates &&
 																		coordinates.length !== 0 &&
@@ -485,6 +510,13 @@ export default function Menu(props: Props): JSX.Element {
 																				</Tr>
 																			)
 																		)}
+
+																	<Tr>
+																		<Td fontWeight={'bold'} fontSize={'xs'}>
+																			Hectareas
+																		</Td>
+																		<Td fontSize={'xs'}>{extension}</Td>
+																	</Tr>
 																</Tbody>
 															</Table>
 														</TableContainer>
@@ -493,6 +525,42 @@ export default function Menu(props: Props): JSX.Element {
 													coordinates={coordinates}
 												/>
 											</FormControl>
+											<Field name='isRent' validate={validateIsRent}>
+												{({ field, form }: any) => (
+													<FormControl
+														as='fieldset'
+														isInvalid={
+															form.errors.isRent && form.touched.isRent
+														}
+													>
+														<FormLabel as='legend' fontSize={14}>
+															Rent
+														</FormLabel>
+														<RadioGroup
+															{...field}
+															marginBottom={!form.errors.isRent && 4}
+															onChange={value =>
+																form.setFieldValue('isRent', value)
+															}
+														>
+															<HStack spacing='24px'>
+																<Radio value='Yes'>
+																	<Text fontSize={14}>Yes</Text>
+																</Radio>
+																<Radio value='No'>
+																	<Text fontSize={14}>No</Text>
+																</Radio>
+															</HStack>
+														</RadioGroup>
+														<FormErrorMessage
+															marginBottom={form.errors.isRent && 4}
+														>
+															{form.errors.isRent}
+														</FormErrorMessage>
+													</FormControl>
+												)}
+											</Field>
+
 											<Field name='country' validate={validateCountry}>
 												{({ field, form }: any) => (
 													<FormControl
@@ -561,6 +629,14 @@ function validateCountry(value: string): string | undefined {
 	let error: string | undefined
 	if (!value) {
 		error = 'Country is required'
+	}
+	return error
+}
+
+function validateIsRent(value: string): string | undefined {
+	let error: string | undefined
+	if (!value) {
+		error = 'Option is required'
 	}
 	return error
 }

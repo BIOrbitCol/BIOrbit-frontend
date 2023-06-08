@@ -5,7 +5,7 @@ import {
 	ImageTimeSeries,
 	Monitoring,
 	MonitoringArea
-} from '@/models/monitoring-area.model'
+} from '@/pages/models/monitoring-area.model'
 import dynamic from 'next/dynamic'
 import React, { useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
@@ -43,55 +43,56 @@ export default function Explorer(): JSX.Element {
 	const { address } = useAccount()
 
 	const fetchData = async () => {
-		try {
-			let contract: BIOrbit | null = null
+		// try {
+		let contract: BIOrbit | null = null
 
-			if (!provider) {
-				const ethereum = (window as any).ethereum
+		if (!provider) {
+			const ethereum = (window as any).ethereum
 
-				const web3Provider = new ethers.providers.Web3Provider(ethereum)
-				await web3Provider.send('eth_requestAccounts', [])
-				const web3Signer = web3Provider.getSigner()
+			const web3Provider = new ethers.providers.Web3Provider(ethereum)
+			await web3Provider.send('eth_requestAccounts', [])
+			const web3Signer = web3Provider.getSigner()
 
-				contract = new Contract(
-					BIOrbitContractJson.address,
-					BIOrbitContractJson.abi,
-					web3Signer
-				) as BIOrbit
+			contract = new Contract(
+				BIOrbitContractJson.address,
+				BIOrbitContractJson.abi,
+				web3Signer
+			) as BIOrbit
 
-				setProvider(web3Provider)
-				setSigner(web3Signer)
-				setBiorbitContract(contract)
-			} else {
-				contract = biorbitContract
-			}
-
-			if (contract) {
-				const myProjects = convertToMonitoringArea(
-					await contract.getProjectsByOwner()
-				)
-
-				const myNotProjects = convertToMonitoringArea(
-					await contract.getProjectsNotOwned()
-				)
-
-				console.log(
-					await contract.getDetectionDatesAndForestCoverExtensionsByProjectId(4)
-				)
-
-				if (Array.isArray(myProjects && myNotProjects)) {
-					setProjectsNotOwned(myNotProjects)
-					setProjects([...myProjects, ...myNotProjects])
-					setFiltedProjects([...myProjects, ...myNotProjects])
-					setTotal(myProjects.length ? myProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
-				}
-			}
-			setSelectedId(null)
-			setIsLoading(false)
-			setSincronized(true)
-		} catch (error) {
-			fetchData()
+			setProvider(web3Provider)
+			setSigner(web3Signer)
+			setBiorbitContract(contract)
+		} else {
+			contract = biorbitContract
 		}
+
+		if (contract) {
+			console.log(await contract.getProjectsByOwner())
+			const myProjects = convertToMonitoringArea(
+				await contract.getProjectsByOwner()
+			)
+
+			const myNotProjects = convertToMonitoringArea(
+				await contract.getProjectsNotOwnedWithoutRent()
+			)
+
+			// console.log(
+			// 	await contract.getDetectionDatesAndForestCoverExtensionsByProjectId(4)
+			// )
+
+			if (Array.isArray(myProjects && myNotProjects)) {
+				setProjectsNotOwned(myNotProjects)
+				setProjects([...myProjects, ...myNotProjects])
+				setFiltedProjects([...myProjects, ...myNotProjects])
+				setTotal(myProjects.length ? myProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
+			}
+		}
+		setSelectedId(null)
+		setIsLoading(false)
+		setSincronized(true)
+		// } catch (error) {
+		// 	fetchData()
+		// }
 	}
 
 	useEffect(() => {
@@ -167,7 +168,9 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 			] = item
 
 			const id: number = parseInt(idData)
-			let extension: number | string = parseFloat(extensionData)
+			let extension: number | string = parseFloat(
+				ethers.utils.parseBytes32String(extensionData)
+			)
 			extension = extension.toFixed(2)
 
 			const footprint: Footprint[] = footprintData.map((coordinate: any) => {
@@ -187,11 +190,11 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 			return {
 				id,
 				uri,
-				name,
-				description,
+				name: ethers.utils.parseBytes32String(name),
+				description: ethers.utils.parseBytes32String(description),
 				state,
 				extension,
-				country,
+				country: ethers.utils.parseBytes32String(country),
 				footprint,
 				owner,
 				imageTimeSeries,
@@ -213,7 +216,9 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 			] = item
 
 			const id: number = parseInt(idData)
-			let extension: number | string = parseFloat(extensionData)
+			let extension: number | string = parseFloat(
+				ethers.utils.parseBytes32String(extensionData)
+			)
 			extension = extension.toFixed(2)
 
 			const footprint: Footprint[] = footprintData.map((coordinate: any) => {
@@ -224,11 +229,11 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 			return {
 				id,
 				uri,
-				name,
-				description,
+				name: ethers.utils.parseBytes32String(name),
+				description: ethers.utils.parseBytes32String(description),
 				state,
 				extension,
-				country,
+				country: ethers.utils.parseBytes32String(country),
 				footprint,
 				owner
 			} as MonitoringArea
