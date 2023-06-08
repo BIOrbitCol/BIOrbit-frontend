@@ -4,8 +4,9 @@ import {
 	Footprint,
 	ImageTimeSeries,
 	Monitoring,
-	MonitoringArea
-} from '@/pages/models/monitoring-area.model'
+	MonitoringArea,
+	RentInfo
+} from '@/assets/models/monitoring-area.model'
 import dynamic from 'next/dynamic'
 import React, { useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
@@ -164,7 +165,10 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 				country,
 				owner,
 				imageTimeSeriesData,
-				monitoringData
+				monitoringData,
+				isRent,
+				rentCostData,
+				rentInfoData
 			] = item
 
 			const id: number = parseInt(idData)
@@ -187,32 +191,50 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 				forestCoverExtension: monitor[1]
 			}))
 
+			const rentCost: string = ethers.utils.formatEther(rentCostData)
+
+			const rentInfo: RentInfo[] = rentInfoData.map((rentInfo: any) => {
+				let milliseconds: number = rentInfo[0] * 1000
+				let dateObject: Date = new Date(milliseconds)
+				let humanDateFormat: string = dateObject.toLocaleString([], {
+					hour12: false
+				})
+				return {
+					renter: rentInfo[0],
+					expiry: humanDateFormat
+				}
+			})
+
 			return {
 				id,
 				uri,
+				state,
 				name: ethers.utils.parseBytes32String(name),
 				description: ethers.utils.parseBytes32String(description),
-				state,
 				extension,
 				country: ethers.utils.parseBytes32String(country),
 				footprint,
 				owner,
 				imageTimeSeries,
-				monitoring
+				monitoring,
+				isRent,
+				rentCost,
+				rentInfo
 			} as MonitoringArea
 		})
 	} catch (error) {
 		return data.map(item => {
 			const [
 				idData,
-				uri,
 				state,
 				name,
 				description,
 				extensionData,
 				footprintData,
 				country,
-				owner
+				owner,
+				isRent,
+				rentCostData
 			] = item
 
 			const id: number = parseInt(idData)
@@ -226,16 +248,19 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 				return { latitude, longitude } as Footprint
 			})
 
+			const rentCost: string = ethers.utils.formatEther(rentCostData)
+
 			return {
 				id,
-				uri,
 				name: ethers.utils.parseBytes32String(name),
 				description: ethers.utils.parseBytes32String(description),
 				state,
 				extension,
 				country: ethers.utils.parseBytes32String(country),
 				footprint,
-				owner
+				owner,
+				isRent,
+				rentCost
 			} as MonitoringArea
 		})
 	}

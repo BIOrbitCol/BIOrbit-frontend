@@ -13,7 +13,10 @@ import {
 	Link
 } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
-import { Footprint, MonitoringArea } from '@/pages/models/monitoring-area.model'
+import {
+	Footprint,
+	MonitoringArea
+} from '@/assets/models/monitoring-area.model'
 import { useEffect, useRef } from 'react'
 import ReactReadMoreReadLess from 'react-read-more-read-less'
 import scrollIntoView from 'scroll-into-view'

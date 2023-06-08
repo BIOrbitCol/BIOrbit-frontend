@@ -1,3 +1,8 @@
+export interface RentInfo {
+	renter: string
+	expiry: string
+}
+
 export interface Monitoring {
 	detectionDate: string
 	forestCoverExtension: string
@@ -15,14 +20,17 @@ export interface Footprint {
 
 export interface MonitoringArea {
 	id: number
-	uri: string
+	uri?: string
+	state: number
 	name: string
 	description: string
-	state: number
 	extension: string
 	country: string
 	footprint: Footprint[]
 	owner: string
 	imageTimeSeries?: ImageTimeSeries
 	monitoring?: Monitoring[]
+	isRent: boolean
+	rentCost: string
+	rentInfo?: RentInfo[]
 }

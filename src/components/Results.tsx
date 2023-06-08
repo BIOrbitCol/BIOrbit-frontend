@@ -1,6 +1,6 @@
 import { Box, Center, Text, VStack } from '@chakra-ui/react'
 import { Project } from './Project'
-import { MonitoringArea } from '@/pages/models/monitoring-area.model'
+import { MonitoringArea } from '@/assets/models/monitoring-area.model'
 import { BIOrbit } from '../../@types/typechain-types'
 
 type Props = {

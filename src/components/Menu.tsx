@@ -51,7 +51,7 @@ import { Results } from './Results'
 import {
 	Monitoring,
 	MonitoringArea
-} from '@/pages/models/monitoring-area.model'
+} from '@/assets/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
 import { useContractWrite } from 'wagmi'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'

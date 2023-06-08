@@ -18,7 +18,7 @@ import {
 } from '@chakra-ui/react'
 import { Field, Form, Formik, FormikHelpers } from 'formik'
 import { useAccount } from 'wagmi'
-import { MonitoringArea } from '@/pages/models/monitoring-area.model'
+import { MonitoringArea } from '@/assets/models/monitoring-area.model'
 import { ethers } from 'ethers'
 import { BIOrbit } from '../../@types/typechain-types'
 

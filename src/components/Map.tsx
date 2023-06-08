@@ -2,7 +2,10 @@ import style from '../styles/Map.module.css'
 
 import { useEffect, useRef, useState } from 'react'
 import { MapContainer, TileLayer, GeoJSON, useMapEvents } from 'react-leaflet'
-import { Footprint, MonitoringArea } from '@/pages/models/monitoring-area.model'
+import {
+	Footprint,
+	MonitoringArea
+} from '@/assets/models/monitoring-area.model'
 import { DrawControl } from './DrawControl'
 
 interface Countries {
