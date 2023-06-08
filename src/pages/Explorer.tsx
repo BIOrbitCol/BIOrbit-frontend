@@ -12,7 +12,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
 import { Contract, ethers } from 'ethers'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
-import { useAccount, useContractRead, useWalletClient } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { BIOrbit } from '../../@types/typechain-types'
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), {
@@ -42,6 +42,7 @@ export default function Explorer(): JSX.Element {
 	const pageSize: number = 50
 
 	const { address } = useAccount()
+	const { chain } = useNetwork()
 
 	const fetchData = async () => {
 		try {
@@ -96,9 +97,11 @@ export default function Explorer(): JSX.Element {
 	}
 
 	useEffect(() => {
-		if (address) {
-			fetchData()
-			return
+		if (chain) {
+			if (address && chain.id === 80001) {
+				fetchData()
+				return
+			}
 		} else {
 			setProvider(null)
 			setSigner(null)
@@ -107,7 +110,7 @@ export default function Explorer(): JSX.Element {
 			setFiltedProjects([])
 		}
 		setIsLoading(false)
-	}, [address, page, sincronized])
+	}, [address, chain, page, sincronized])
 
 	return (
 		<>

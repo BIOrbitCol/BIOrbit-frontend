@@ -7,7 +7,6 @@ import {
 	Form,
 	Formik,
 	FieldArrayRenderProps,
-	FormikErrors,
 	FormikHelpers,
 	FormikProps,
 	useFormikContext
@@ -44,7 +43,7 @@ import {
 	TableContainer,
 	Text
 } from '@chakra-ui/react'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
 import { Results } from './Results'
@@ -121,6 +120,7 @@ export default function Menu(props: Props): JSX.Element {
 	const [value, setValue] = useState('')
 
 	const { address } = useAccount()
+	const { chain } = useNetwork()
 
 	const onMonitorTab = (): void => {
 		if (extensionAreaOption === 'Polygon') {
@@ -287,7 +287,7 @@ export default function Menu(props: Props): JSX.Element {
 							<Tab ref={protectedAreasTabRef} onClick={onProtectedAreasTab}>
 								Protected areas
 							</Tab>
-							{address && (
+							{address && chain?.id === 80001 && (
 								<Tab onClick={onMonitorTab}>{address && 'Monitor'}</Tab>
 							)}
 						</TabList>
