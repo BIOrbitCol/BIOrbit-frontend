@@ -14,6 +14,7 @@ import { Contract, ethers } from 'ethers'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
 import { useAccount, useNetwork } from 'wagmi'
 import { BIOrbit } from '../../@types/typechain-types'
+import { CHAINID } from '@/constants/constants'
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), {
 	ssr: false
@@ -51,9 +52,11 @@ export default function Explorer(): JSX.Element {
 			if (!provider) {
 				const ethereum = (window as any).ethereum
 
-				const web3Provider = new ethers.providers.Web3Provider(ethereum)
+				const web3Provider: ethers.providers.Web3Provider =
+					new ethers.providers.Web3Provider(ethereum)
 				await web3Provider.send('eth_requestAccounts', [])
-				const web3Signer = web3Provider.getSigner()
+				const web3Signer: ethers.providers.JsonRpcSigner =
+					web3Provider.getSigner()
 
 				contract = new Contract(
 					BIOrbitContractJson.address,
@@ -69,22 +72,22 @@ export default function Explorer(): JSX.Element {
 			}
 
 			if (contract) {
-				const myProjects = convertToMonitoringArea(
+				const myProjects: MonitoringArea[] = convertToMonitoringArea(
 					await contract.getProjectsByOwner()
 				)
 
-				const myRentProject = convertToMonitoringArea(
+				const myRentProject: MonitoringArea[] = convertToMonitoringArea(
 					await contract.getActiveRentingProjects()
 				)
 
-				const myNotProjects = convertToMonitoringArea(
+				const myNotProjects: MonitoringArea[] = convertToMonitoringArea(
 					await contract.getProjectsNotOwnedWithoutRent()
 				)
 
 				if (Array.isArray(myProjects && myNotProjects)) {
 					setProjectsNotOwned(myNotProjects)
-					setProjects([...myProjects, ...myNotProjects])
-					setFiltedProjects([...myProjects, ...myNotProjects])
+					setProjects([...myProjects, ...myRentProject, ...myNotProjects])
+					setFiltedProjects([...myProjects, ...myRentProject, ...myNotProjects])
 					setTotal(myProjects.length ? myProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
 				}
 			}
@@ -92,16 +95,15 @@ export default function Explorer(): JSX.Element {
 			setIsLoading(false)
 			setSincronized(true)
 		} catch (error) {
+			console.error(error)
 			fetchData()
 		}
 	}
 
 	useEffect(() => {
-		if (chain) {
-			if (address && chain.id === 80001) {
-				fetchData()
-				return
-			}
+		if (chain?.id === CHAINID && address) {
+			fetchData()
+			return
 		} else {
 			setProvider(null)
 			setSigner(null)
@@ -110,7 +112,7 @@ export default function Explorer(): JSX.Element {
 			setFiltedProjects([])
 		}
 		setIsLoading(false)
-	}, [address, chain, page, sincronized])
+	}, [chain, address, sincronized])
 
 	return (
 		<>
