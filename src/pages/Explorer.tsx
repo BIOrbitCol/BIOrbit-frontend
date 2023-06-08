@@ -44,56 +44,55 @@ export default function Explorer(): JSX.Element {
 	const { address } = useAccount()
 
 	const fetchData = async () => {
-		// try {
-		let contract: BIOrbit | null = null
+		try {
+			let contract: BIOrbit | null = null
 
-		if (!provider) {
-			const ethereum = (window as any).ethereum
+			if (!provider) {
+				const ethereum = (window as any).ethereum
 
-			const web3Provider = new ethers.providers.Web3Provider(ethereum)
-			await web3Provider.send('eth_requestAccounts', [])
-			const web3Signer = web3Provider.getSigner()
+				const web3Provider = new ethers.providers.Web3Provider(ethereum)
+				await web3Provider.send('eth_requestAccounts', [])
+				const web3Signer = web3Provider.getSigner()
 
-			contract = new Contract(
-				BIOrbitContractJson.address,
-				BIOrbitContractJson.abi,
-				web3Signer
-			) as BIOrbit
+				contract = new Contract(
+					BIOrbitContractJson.address,
+					BIOrbitContractJson.abi,
+					web3Signer
+				) as BIOrbit
 
-			setProvider(web3Provider)
-			setSigner(web3Signer)
-			setBiorbitContract(contract)
-		} else {
-			contract = biorbitContract
-		}
-
-		if (contract) {
-			console.log(await contract.getProjectsByOwner())
-			const myProjects = convertToMonitoringArea(
-				await contract.getProjectsByOwner()
-			)
-
-			const myNotProjects = convertToMonitoringArea(
-				await contract.getProjectsNotOwnedWithoutRent()
-			)
-
-			// console.log(
-			// 	await contract.getDetectionDatesAndForestCoverExtensionsByProjectId(4)
-			// )
-
-			if (Array.isArray(myProjects && myNotProjects)) {
-				setProjectsNotOwned(myNotProjects)
-				setProjects([...myProjects, ...myNotProjects])
-				setFiltedProjects([...myProjects, ...myNotProjects])
-				setTotal(myProjects.length ? myProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
+				setProvider(web3Provider)
+				setSigner(web3Signer)
+				setBiorbitContract(contract)
+			} else {
+				contract = biorbitContract
 			}
+
+			if (contract) {
+				const myProjects = convertToMonitoringArea(
+					await contract.getProjectsByOwner()
+				)
+
+				const myRentProject = convertToMonitoringArea(
+					await contract.getActiveRentingProjects()
+				)
+
+				const myNotProjects = convertToMonitoringArea(
+					await contract.getProjectsNotOwnedWithoutRent()
+				)
+
+				if (Array.isArray(myProjects && myNotProjects)) {
+					setProjectsNotOwned(myNotProjects)
+					setProjects([...myProjects, ...myNotProjects])
+					setFiltedProjects([...myProjects, ...myNotProjects])
+					setTotal(myProjects.length ? myProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
+				}
+			}
+			setSelectedId(null)
+			setIsLoading(false)
+			setSincronized(true)
+		} catch (error) {
+			fetchData()
 		}
-		setSelectedId(null)
-		setIsLoading(false)
-		setSincronized(true)
-		// } catch (error) {
-		// 	fetchData()
-		// }
 	}
 
 	useEffect(() => {

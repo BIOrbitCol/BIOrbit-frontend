@@ -11,16 +11,31 @@ import {
 } from '@chakra-ui/react'
 import { useState } from 'react'
 import { BIOrbit } from '../../@types/typechain-types'
+import { MonitoringArea } from '@/assets/models/monitoring-area.model'
+import { Plot } from './Plot'
+
+type GeoJsonData = GeoJSON.Feature<
+	GeoJSON.Geometry,
+	GeoJSON.GeoJsonProperties
+> & {
+	properties: {
+		ndvi: string
+		rgb: string
+	} & MonitoringArea
+}
 
 type Props = {
 	biorbitContract: BIOrbit | null
 	isOpen: boolean
+	geoJson: GeoJsonData | null
 	onOpen: () => void
 	onClose: () => void
 }
 
 export function StatsModal(props: Props) {
-	const { biorbitContract, isOpen, onOpen, onClose } = props
+	const { biorbitContract, isOpen, geoJson, onOpen, onClose } = props
+
+	console.log('geoJson: ', geoJson)
 
 	const [size, setSize] = useState('md')
 	const sizes = ['xs', 'sm', 'md', 'lg', 'xl', 'full']
@@ -42,9 +57,11 @@ export function StatsModal(props: Props) {
 			<Modal onClose={onClose} size={size} isOpen={isOpen}>
 				<ModalOverlay />
 				<ModalContent>
-					<ModalHeader>Modal Title</ModalHeader>
+					<ModalHeader>{geoJson?.properties?.name}</ModalHeader>
 					<ModalCloseButton />
-					<ModalBody>fsfs</ModalBody>
+					<ModalBody>
+						<Plot />
+					</ModalBody>
 					<ModalFooter>
 						<Button onClick={onClose}>Close</Button>
 					</ModalFooter>

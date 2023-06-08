@@ -16,6 +16,7 @@ interface Country {
 	name: string
 	flag: string
 }
+
 type GeoJsonData = GeoJSON.Feature<
 	GeoJSON.Geometry,
 	GeoJSON.GeoJsonProperties
@@ -83,6 +84,7 @@ export default function Map(props: Props) {
 
 	const mapRef = useRef<L.Map | null>(null)
 
+	const [geoJson, setGeoJson] = useState<GeoJsonData | null>(null)
 	const [geoJsonData, setGeoJsonData] = useState<GeoJsonData[]>([])
 
 	const [geoJsonDataNotOwned, setGeoJsonDataNotOwned] = useState<
@@ -110,10 +112,10 @@ export default function Map(props: Props) {
 
 	const centerMap = (geoLayer: L.GeoJSON<any, Geometry>) => {
 		if (mapRef.current) {
-			const bounds = geoLayer.getBounds()
+			const bounds: L.LatLngBounds = geoLayer.getBounds()
 			mapRef.current.fitBounds(bounds, {
 				paddingTopLeft: [600, 0],
-				maxZoom: 8
+				maxZoom: mapRef.current.getBoundsZoom(bounds)
 			})
 		}
 	}
@@ -127,18 +129,46 @@ export default function Map(props: Props) {
 				if (geoJsonObject.type === 'Feature') {
 					setSelectedId(geoJsonObject.properties.id)
 					if (geoJsonObject.properties.owner === address) {
-						geoJsonLayer.bindPopup(`
-            <p>${geoJsonObject.properties.name} ${getCountryFlag(
-							geoJsonObject.properties.country
-						)} </p>
-            <button class="${style['chakra-button']} ${
-							style['chakra-button-xs']
-						} ${
-							style['chakra-button-blue']
-						}" onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))" >View</button>
-          `)
+						if (geoJsonObject.properties.state === 0) {
+							setGeoJson(geoJsonObject)
+							geoJsonLayer.bindPopup(`
+                <p>${geoJsonObject.properties.name} ${getCountryFlag(
+								geoJsonObject.properties.country
+							)} </p>
+                <button class="${style['chakra-button']} ${
+								style['chakra-button-xs']
+							} ${
+								style['chakra-button-blue']
+							}" onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))" >View</button>
+              `)
+						} else {
+							geoJsonLayer.bindPopup(`
+                <p>${geoJsonObject.properties.name} ${getCountryFlag(
+								geoJsonObject.properties.country
+							)} </p>
+               <p>Monitoring 🛰</p>
+              `)
+						}
 					} else {
-						geoJsonLayer.bindPopup(`<p>Locked 🔒️<p>`)
+						if (geoJsonObject.properties.state === 0) {
+							geoJsonLayer.bindPopup(`
+              <p>Locked 🔒️<p>
+              <button
+              class="${style['chakra-button']} ${style['chakra-button-xs']} ${
+								style['chakra-button-blue']
+							}"
+              onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))"
+              >
+              Rent
+              </button> ${geoJsonObject.properties.rentCost + ' MATIC'}
+              `)
+						} else {
+							geoJsonLayer.bindPopup(`
+								<p>Locked 🔒️<p>
+                <p>Monitoring 🛰</p>
+
+                 `)
+						}
 					}
 				}
 			})
@@ -245,12 +275,15 @@ export default function Map(props: Props) {
 					themeColor={'blue.500'}
 				/>
 			)}
-			<StatsModal
-				biorbitContract={biorbitContract}
-				isOpen={isOpen}
-				onOpen={onOpen}
-				onClose={onClose}
-			/>
+			{geoJson?.properties.id && (
+				<StatsModal
+					biorbitContract={biorbitContract}
+					isOpen={isOpen}
+					geoJson={geoJson}
+					onOpen={onOpen}
+					onClose={onClose}
+				/>
+			)}
 		</MapContainer>
 	)
 }

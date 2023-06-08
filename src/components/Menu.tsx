@@ -397,7 +397,7 @@ export default function Menu(props: Props): JSX.Element {
 																	values.country
 																),
 																values.isRent === 'Yes' ? true : false,
-																{ gasLimit: 2500000, value: rentCost }
+																{ gasLimit: 6000000, value: rentCost }
 															)
 														await mintTx.wait(1)
 														setSincronized(false)
