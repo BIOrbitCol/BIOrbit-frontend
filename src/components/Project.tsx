@@ -13,10 +13,7 @@ import {
 	Link
 } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
-import {
-	Footprint,
-	MonitoringArea
-} from '@/assets/models/monitoring-area.model'
+import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { useEffect, useRef } from 'react'
 import ReactReadMoreReadLess from 'react-read-more-read-less'
 import scrollIntoView from 'scroll-into-view'
@@ -35,6 +32,7 @@ type Props = {
 	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
 	project: MonitoringArea
 	selectedId: number | null
+	setIsHidden: React.Dispatch<React.SetStateAction<boolean>>
 	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 	setSincronized: React.Dispatch<React.SetStateAction<boolean>>
 }
@@ -46,6 +44,7 @@ export function Project(props: Props): JSX.Element {
 		handleSelect,
 		project,
 		selectedId,
+		setIsHidden,
 		setIsLoading,
 		setSincronized
 	} = props
@@ -55,8 +54,16 @@ export function Project(props: Props): JSX.Element {
 	const { address } = useAccount()
 
 	const coordinates: Coordinates = getLastCoordinates(project.footprint)
-
 	const enable: boolean = project.owner === address ? true : false
+
+	const handleSet = () => {
+		handleSelect(project.id)
+		if (project.owner === address) {
+			setIsHidden(false)
+		} else {
+			setIsHidden(true)
+		}
+	}
 
 	useEffect(() => {
 		if (selectedId == project.id) {
@@ -78,7 +85,7 @@ export function Project(props: Props): JSX.Element {
 			w={'100%'}
 			p={3}
 			rounded='sm'
-			onClick={() => handleSelect(project.id)}
+			onClick={handleSet}
 			_hover={{ borderColor: 'blue.500' }}
 			cursor='pointer'
 		>

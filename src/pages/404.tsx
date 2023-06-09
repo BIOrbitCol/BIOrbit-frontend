@@ -4,7 +4,7 @@ import Image from 'next/image'
 import logo from '@/assets/images/brand-transparent.svg'
 import { useRouter } from 'next/router'
 
-export default function NotFoundPage() {
+export default function NotFoundPage(): JSX.Element {
 	const router = useRouter()
 
 	const goHome = () => {

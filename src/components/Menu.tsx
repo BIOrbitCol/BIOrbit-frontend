@@ -47,10 +47,7 @@ import { useAccount, useNetwork } from 'wagmi'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
 import { Results } from './Results'
-import {
-	Monitoring,
-	MonitoringArea
-} from '@/assets/models/monitoring-area.model'
+import { Monitoring, MonitoringArea } from '@/models/monitoring-area.model'
 import { ResultsPagination } from './ResultsPagination'
 import { useContractWrite } from 'wagmi'
 import BIOrbitContractJson from '@/assets/contracts/BIOrbit.json'
@@ -79,6 +76,7 @@ type Props = {
 	selectedId: number | null
 	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
 	setFiltedProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
+	setIsHidden: React.Dispatch<React.SetStateAction<boolean>>
 	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 	setProjects: React.Dispatch<React.SetStateAction<MonitoringArea[]>>
 	setShowDrawControl: React.Dispatch<React.SetStateAction<boolean>>
@@ -104,6 +102,7 @@ export default function Menu(props: Props): JSX.Element {
 		setCoordinates,
 		setFiltedProjects,
 		setShowDrawControl,
+		setIsHidden,
 		setIsLoading,
 		setProjects,
 		setSincronized,
@@ -324,6 +323,7 @@ export default function Menu(props: Props): JSX.Element {
 										projects={filtedProjects}
 										projectsNotOwned={projectsNotOwned}
 										selectedId={selectedId}
+										setIsHidden={setIsHidden}
 										setIsLoading={setIsLoading}
 										setSincronized={setSincronized}
 									/>
@@ -400,7 +400,9 @@ export default function Menu(props: Props): JSX.Element {
 																{ gasLimit: 6000000, value: rentCost }
 															)
 														await mintTx.wait(1)
-														setSincronized(false)
+														setTimeout(() => {
+															setSincronized(false)
+														}, 1500)
 													} catch (error) {
 														console.error(error)
 														setIsLoading(false)

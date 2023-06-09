@@ -6,7 +6,7 @@ import {
 	Monitoring,
 	MonitoringArea,
 	RentInfo
-} from '@/assets/models/monitoring-area.model'
+} from '@/models/monitoring-area.model'
 import dynamic from 'next/dynamic'
 import React, { useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
@@ -26,18 +26,19 @@ export default function Explorer(): JSX.Element {
 	const [biorbitContract, setBiorbitContract] = useState<BIOrbit | null>(null)
 	const [coordinates, setCoordinates] = useState<number[][]>([])
 	const [filtedProjects, setFiltedProjects] = useState<MonitoringArea[]>([])
+	const [isHidden, setIsHidden] = useState<boolean>(true)
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [page, setPage] = useState<number>(0)
 	const [projects, setProjects] = useState<MonitoringArea[]>([])
 	const [projectsNotOwned, setProjectsNotOwned] = useState<MonitoringArea[]>([])
-	const [selectedId, setSelectedId] = useState<number | null>(null)
-	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
-	const [sincronized, setSincronized] = useState<boolean>(true)
 	const [provider, setProvider] =
 		useState<ethers.providers.Web3Provider | null>(null)
+	const [selectedId, setSelectedId] = useState<number | null>(null)
+	const [showDrawControl, setShowDrawControl] = useState<boolean>(false)
 	const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | null>(
 		null
 	)
+	const [sincronized, setSincronized] = useState<boolean>(true)
 	const [total, setTotal] = useState<number>(0)
 
 	const pageSize: number = 50
@@ -84,11 +85,17 @@ export default function Explorer(): JSX.Element {
 					await contract.getProjectsNotOwnedWithoutRent()
 				)
 
+				const allProject: MonitoringArea[] = [
+					...myProjects,
+					...myRentProject,
+					...myNotProjects
+				]
+
 				if (Array.isArray(myProjects && myNotProjects)) {
 					setProjectsNotOwned(myNotProjects)
-					setProjects([...myProjects, ...myRentProject, ...myNotProjects])
-					setFiltedProjects([...myProjects, ...myRentProject, ...myNotProjects])
-					setTotal(myProjects.length ? myProjects.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
+					setProjects(allProject)
+					setFiltedProjects(allProject)
+					setTotal(allProject.length ? allProject.length : 0) //setTotal(searchResults.length ? searchResults[0].total : 0)
 				}
 			}
 			setSelectedId(null)
@@ -132,6 +139,7 @@ export default function Explorer(): JSX.Element {
 				selectedId={selectedId}
 				setCoordinates={setCoordinates}
 				setFiltedProjects={setFiltedProjects}
+				setIsHidden={setIsHidden}
 				setIsLoading={setIsLoading}
 				setProjects={setProjects}
 				setShowDrawControl={setShowDrawControl}
@@ -141,15 +149,14 @@ export default function Explorer(): JSX.Element {
 			/>
 			<MapWithNoSSR
 				biorbitContract={biorbitContract}
-				filtedProjects={filtedProjects}
-				handleSelect={setSelectedId}
-				projects={projects}
-				projectsNotOwned={projectsNotOwned}
+				isHidden={isHidden}
 				polygonRef={polygonRef}
-				selectedId={selectedId}
-				setSelectedId={setSelectedId}
-				setCoordinates={setCoordinates}
+				projects={projects}
 				showDrawControl={showDrawControl}
+				selectedId={selectedId}
+				setCoordinates={setCoordinates}
+				setIsHidden={setIsHidden}
+				setSelectedId={setSelectedId}
 			/>
 		</>
 	)

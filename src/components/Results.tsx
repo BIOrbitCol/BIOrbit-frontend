@@ -1,6 +1,6 @@
 import { Box, Center, Text, VStack } from '@chakra-ui/react'
 import { Project } from './Project'
-import { MonitoringArea } from '@/assets/models/monitoring-area.model'
+import { MonitoringArea } from '@/models/monitoring-area.model'
 import { BIOrbit } from '../../@types/typechain-types'
 
 type Props = {
@@ -10,6 +10,7 @@ type Props = {
 	projects: MonitoringArea[]
 	projectsNotOwned: MonitoringArea[]
 	selectedId: number | null
+	setIsHidden: React.Dispatch<React.SetStateAction<boolean>>
 	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 	setSincronized: React.Dispatch<React.SetStateAction<boolean>>
 }
@@ -22,6 +23,7 @@ export function Results(props: Props) {
 		projects,
 		projectsNotOwned,
 		selectedId,
+		setIsHidden,
 		setIsLoading,
 		setSincronized
 	} = props
@@ -38,24 +40,11 @@ export function Results(props: Props) {
 								key={index}
 								project={project}
 								selectedId={selectedId}
+								setIsHidden={setIsHidden}
 								setIsLoading={setIsLoading}
 								setSincronized={setSincronized}
 							/>
 						))}
-						{/* {projectsNotOwned.map(
-							(projectNotOwned: MonitoringArea, index: number) => (
-								<Project
-									biorbitContract={biorbitContract}
-									handleSelect={handleSelect}
-									isLoading={isLoading}
-									key={index}
-									project={projectNotOwned}
-									selectedId={selectedId}
-									setIsLoading={setIsLoading}
-									setSincronized={setSincronized}
-								/>
-							)
-						)} */}
 					</>
 				) : (
 					<Text size={'md'}>- No information -</Text>

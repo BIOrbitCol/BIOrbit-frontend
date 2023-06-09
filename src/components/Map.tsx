@@ -1,21 +1,25 @@
 import style from '../styles/Map.module.css'
-
+import { useDisclosure } from '@chakra-ui/react'
+import { Geometry } from 'geojson'
 import { useEffect, useRef, useState } from 'react'
-import { MapContainer, TileLayer, GeoJSON, useMapEvents } from 'react-leaflet'
-import {
-	Footprint,
-	MonitoringArea
-} from '@/assets/models/monitoring-area.model'
+import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
+import { useAccount } from 'wagmi'
+import * as L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import 'leaflet-defaulticon-compatibility'
+import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
+import 'leaflet-draw'
+import 'leaflet-draw/dist/leaflet.draw.css'
+import 'leaflet-measure'
+import 'leaflet-measure/dist/leaflet-measure.js'
+import 'leaflet-measure/dist/leaflet-measure.css'
+import { BIOrbit } from '../../@types/typechain-types'
+import countriesJson from '@/assets/json/countries.json'
+import { Countries, Country } from '@/models/countries.model'
+import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { DrawControl } from './DrawControl'
-
-interface Countries {
-	countries: Country[]
-}
-
-interface Country {
-	name: string
-	flag: string
-}
+import LayerOptions from './LayerOptions'
+import { StatsModal } from './StatsModal'
 
 type GeoJsonData = GeoJSON.Feature<
 	GeoJSON.Geometry,
@@ -27,83 +31,40 @@ type GeoJsonData = GeoJSON.Feature<
 	} & MonitoringArea
 }
 
-import * as L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-import 'leaflet-defaulticon-compatibility'
-import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
-import 'leaflet-draw'
-import 'leaflet-draw/dist/leaflet.draw.css'
-import 'leaflet-measure'
-import 'leaflet-measure/dist/leaflet-measure.js'
-import 'leaflet-measure/dist/leaflet-measure.css'
-import LayerOptions from './LayerOptions'
-import { Feature, GeoJsonProperties, Geometry } from 'geojson'
-import { useAccount } from 'wagmi'
-import { BIOrbit } from '../../@types/typechain-types'
-import countriesJson from '../assets/json/countries.json'
-
-import {
-	Button,
-	Modal,
-	ModalBody,
-	ModalCloseButton,
-	ModalContent,
-	ModalFooter,
-	ModalHeader,
-	ModalOverlay,
-	useDisclosure
-} from '@chakra-ui/react'
-import { StatsModal } from './StatsModal'
-
 type Props = {
 	biorbitContract: BIOrbit | null
-	filtedProjects: MonitoringArea[]
-	handleSelect: React.Dispatch<React.SetStateAction<number | null>>
+	isHidden: boolean
 	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
 	projects: MonitoringArea[]
-	projectsNotOwned: MonitoringArea[]
 	selectedId: number | null
-	setSelectedId: React.Dispatch<React.SetStateAction<number | null>>
 	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
+	setIsHidden: React.Dispatch<React.SetStateAction<boolean>>
+	setSelectedId: React.Dispatch<React.SetStateAction<number | null>>
 	showDrawControl: boolean
 }
 
 export default function Map(props: Props) {
 	const {
 		biorbitContract,
-		filtedProjects,
-		handleSelect,
+		isHidden,
 		polygonRef,
 		projects,
-		projectsNotOwned,
 		selectedId,
 		setCoordinates,
+		setIsHidden,
 		setSelectedId,
 		showDrawControl
 	} = props
 
 	const mapRef = useRef<L.Map | null>(null)
 
-	const [geoJson, setGeoJson] = useState<GeoJsonData | null>(null)
+	const [geoJsonClicked, setGeoJsonClicked] = useState<GeoJsonData | null>(null)
 	const [geoJsonData, setGeoJsonData] = useState<GeoJsonData[]>([])
-
-	const [geoJsonDataNotOwned, setGeoJsonDataNotOwned] = useState<
-		GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>[]
-	>([])
-
-	const [geoJsonProject, setGeoJsonProject] = useState<Feature<
-		Geometry,
-		GeoJsonProperties
-	> | null>(null)
-
-	const [isHidden, setIsHidden] = useState<boolean>(true)
 	const [layerName, setLayerName] = useState<string>('Transparent')
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
-
 	const { address } = useAccount()
 
-	// Define layer name options
 	let layerNames = [
 		{ label: 'Transparent', name: 'Transparent' },
 		{ label: 'RGB', name: 'RGB' },
@@ -129,45 +90,55 @@ export default function Map(props: Props) {
 				if (geoJsonObject.type === 'Feature') {
 					setSelectedId(geoJsonObject.properties.id)
 					if (geoJsonObject.properties.owner === address) {
+						setIsHidden(false)
 						if (geoJsonObject.properties.state === 0) {
-							setGeoJson(geoJsonObject)
+							setGeoJsonClicked(geoJsonObject)
 							geoJsonLayer.bindPopup(`
-                <p>${geoJsonObject.properties.name} ${getCountryFlag(
-								geoJsonObject.properties.country
-							)} </p>
-                <button class="${style['chakra-button']} ${
-								style['chakra-button-xs']
-							} ${
-								style['chakra-button-blue']
-							}" onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))" >View</button>
+                <div class="${style['bind-container']}">
+                <button class="${style['chakra-button']} ${style['chakra-button-xs']} ${style['chakra-button-blue']}" onclick="window.dispatchEvent(new CustomEvent('popupButtonView'))">View</button>
+                </div>
               `)
 						} else {
 							geoJsonLayer.bindPopup(`
-                <p>${geoJsonObject.properties.name} ${getCountryFlag(
-								geoJsonObject.properties.country
-							)} </p>
-               <p>Monitoring 🛰</p>
+                <div class="${style['bind-container']}">
+                  <p class="${style['bind-container__name']}">Monitoring 🛰</p>
+                </div>
               `)
 						}
 					} else {
-						if (geoJsonObject.properties.state === 0) {
+						setIsHidden(true)
+						if (
+							geoJsonObject.properties.state === 0 &&
+							geoJsonObject.properties.isRent
+						) {
 							geoJsonLayer.bindPopup(`
-              <p>Locked 🔒️<p>
-              <button
-              class="${style['chakra-button']} ${style['chakra-button-xs']} ${
+                <div class="${style['bind-container']}">
+                  <p class="${style['bind-container__name']}">Locked 🔒️</p>
+                  <button class="${style['chakra-button']} ${
+								style['chakra-button-xs']
+							} ${
 								style['chakra-button-blue']
-							}"
-              onclick="window.dispatchEvent(new CustomEvent('popupButtonClick'))"
-              >
-              Rent
-              </button> ${geoJsonObject.properties.rentCost + ' MATIC'}
+							}" onclick="window.dispatchEvent(new CustomEvent('popupButtonView'))">Rent</button> ${
+								geoJsonObject.properties.rentCost + ' MATIC'
+							}
+                </div>
+              `)
+						} else if (
+							geoJsonObject.properties.state === 0 &&
+							!geoJsonObject.properties.isRent
+						) {
+							geoJsonLayer.bindPopup(`
+                <div class="${style['bind-container']}">
+                  <p class="${style['bind-container__name']}">Not for rent 🔒️</p>
+                </div>
               `)
 						} else {
 							geoJsonLayer.bindPopup(`
-								<p>Locked 🔒️<p>
-                <p>Monitoring 🛰</p>
-
-                 `)
+                <div class="${style['bind-container']}">
+                  <p class="${style['bind-container__name']}">Locked 🔒️</p>
+                  <p class="${style['bind-container__name']}">Monitoring 🛰</p>
+                </div>
+              `)
 						}
 					}
 				}
@@ -178,12 +149,7 @@ export default function Map(props: Props) {
 	useEffect(() => {
 		let newGeoJsonData: GeoJsonData[] = []
 
-		let newGeoJsonDataNotOwned: GeoJSON.Feature<
-			GeoJSON.Geometry,
-			GeoJSON.GeoJsonProperties
-		>[] = []
-
-		for (let project of filtedProjects) {
+		for (let project of projects) {
 			const geoJSON: GeoJsonData = {
 				type: 'Feature',
 				geometry: {
@@ -206,32 +172,27 @@ export default function Map(props: Props) {
 		}
 
 		setGeoJsonData(newGeoJsonData)
-		setGeoJsonDataNotOwned(newGeoJsonDataNotOwned)
 	}, [address, projects])
 
 	useEffect(() => {
 		if (selectedId) {
 			geoJsonData.forEach((geoJson: GeoJsonData): void => {
-				if (geoJson.properties && geoJson.properties.id === selectedId) {
+				if (geoJson.properties.id === selectedId) {
 					const geoLayer = L.geoJSON(geoJson)
-					if (geoLayer) {
-						centerMap(geoLayer)
-						setIsHidden(false)
-						setGeoJsonProject(geoJson)
-						return
-					}
+					centerMap(geoLayer)
+					return
 				}
 			})
 		}
 	}, [selectedId])
 
 	useEffect(() => {
-		const handlePopupButtonClick = () => onOpen()
+		const handlePopupButtonView = () => onOpen()
 
-		window.addEventListener('popupButtonClick', handlePopupButtonClick)
+		window.addEventListener('popupButtonView', handlePopupButtonView)
 
 		return () => {
-			window.removeEventListener('popupButtonClick', handlePopupButtonClick)
+			window.removeEventListener('popupButtonView', handlePopupButtonView)
 		}
 	}, [onOpen])
 
@@ -252,48 +213,37 @@ export default function Map(props: Props) {
 				setCoordinates={setCoordinates}
 				showDrawControl={showDrawControl}
 			/>
-			{geoJsonData.map((data: GeoJsonData, index: number) => (
+			{geoJsonData.map((geoJson: GeoJsonData, index: number) => (
 				<GeoJSON
 					key={index}
 					onEachFeature={onEachFeature}
-					data={data}
+					data={geoJson}
 					style={{
 						fillOpacity: 0.01,
 						weight: 2,
-						color: data.properties.owner == address ? ' yellow' : 'red'
+						color: geoJson.properties.owner == address ? ' yellow' : 'red'
 					}}
 				/>
 			))}
-
 			{!isHidden && (
 				<LayerOptions
 					activeOption={layerName}
-					geoJsonProject={geoJsonProject}
+					geoJsonProject={geoJsonClicked}
 					mapRef={mapRef}
 					options={layerNames}
 					setOption={setLayerName}
 					themeColor={'blue.500'}
 				/>
 			)}
-			{geoJson?.properties.id && (
+			{geoJsonClicked?.properties.id && (
 				<StatsModal
 					biorbitContract={biorbitContract}
 					isOpen={isOpen}
-					geoJson={geoJson}
+					geoJson={geoJsonClicked}
 					onOpen={onOpen}
 					onClose={onClose}
 				/>
 			)}
 		</MapContainer>
 	)
-}
-
-function getCountryFlag(countryName: string): string {
-	const countriesData: Countries = countriesJson
-	const country = countriesData.countries.find(
-		(country: Country) =>
-			country.name.toLowerCase() === countryName.toLowerCase()
-	)
-
-	return country ? country.flag : 'Country not found'
 }

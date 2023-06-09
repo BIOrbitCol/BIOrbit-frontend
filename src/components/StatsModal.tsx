@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react'
 import { useState } from 'react'
 import { BIOrbit } from '../../@types/typechain-types'
-import { MonitoringArea } from '@/assets/models/monitoring-area.model'
+import { MonitoringArea } from '@/models/monitoring-area.model'
 import { Plot } from './Plot'
 
 type GeoJsonData = GeoJSON.Feature<

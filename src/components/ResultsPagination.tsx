@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import { Box, Text, Flex, Button } from '@chakra-ui/react'
-import { MonitoringArea } from '@/assets/models/monitoring-area.model'
+import { MonitoringArea } from '@/models/monitoring-area.model'
 
 type Props = {
 	isLoading: boolean

@@ -3,6 +3,20 @@
 	height: 100vh;
 }
 
+.bind-container {
+	margin: 1px;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+}
+
+.bind-container__name {
+	margin: 0 !important;
+}
+
 .chakra-button {
 	/* Base styles */
 	display: inline-flex;
