@@ -58,6 +58,9 @@ export default function Map(props: Props) {
 
 	const mapRef = useRef<L.Map | null>(null)
 
+	const [geoJsonSelected, setGeoJsonSelected] = useState<GeoJsonData | null>(
+		null
+	)
 	const [geoJsonClicked, setGeoJsonClicked] = useState<GeoJsonData | null>(null)
 	const [geoJsonData, setGeoJsonData] = useState<GeoJsonData[]>([])
 	const [layerName, setLayerName] = useState<string>('Transparent')
@@ -180,6 +183,11 @@ export default function Map(props: Props) {
 				if (geoJson.properties.id === selectedId) {
 					const geoLayer = L.geoJSON(geoJson)
 					centerMap(geoLayer)
+					if (geoJson.properties.state === 0) {
+						setGeoJsonSelected(geoJson)
+					} else {
+						setIsHidden(true)
+					}
 					return
 				}
 			})
@@ -228,7 +236,7 @@ export default function Map(props: Props) {
 			{!isHidden && (
 				<LayerOptions
 					activeOption={layerName}
-					geoJsonProject={geoJsonClicked}
+					geoJsonProject={geoJsonSelected}
 					mapRef={mapRef}
 					options={layerNames}
 					setOption={setLayerName}
