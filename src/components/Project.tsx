@@ -58,7 +58,7 @@ export function Project(props: Props): JSX.Element {
 
 	const handleSet = () => {
 		handleSelect(project.id)
-		if (project.owner === address) {
+		if (project.owner === address && project.state === 0) {
 			setIsHidden(false)
 		} else {
 			setIsHidden(true)

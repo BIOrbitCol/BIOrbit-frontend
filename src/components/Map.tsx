@@ -93,15 +93,16 @@ export default function Map(props: Props) {
 				if (geoJsonObject.type === 'Feature') {
 					setSelectedId(geoJsonObject.properties.id)
 					if (geoJsonObject.properties.owner === address) {
-						setIsHidden(false)
 						if (geoJsonObject.properties.state === 0) {
 							setGeoJsonClicked(geoJsonObject)
+							setIsHidden(false)
 							geoJsonLayer.bindPopup(`
                 <div class="${style['bind-container']}">
                 <button class="${style['chakra-button']} ${style['chakra-button-xs']} ${style['chakra-button-blue']}" onclick="window.dispatchEvent(new CustomEvent('popupButtonView'))">View</button>
                 </div>
               `)
 						} else {
+							setIsHidden(true)
 							geoJsonLayer.bindPopup(`
                 <div class="${style['bind-container']}">
                   <p class="${style['bind-container__name']}">Monitoring 🛰</p>
