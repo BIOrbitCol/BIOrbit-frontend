@@ -11,7 +11,26 @@ import {
 	Legend,
 	ResponsiveContainer
 } from 'recharts'
-
+import {
+	Box,
+	Button,
+	Heading,
+	Modal,
+	ModalBody,
+	ModalCloseButton,
+	ModalContent,
+	ModalFooter,
+	ModalHeader,
+	ModalOverlay,
+	Spacer,
+	Table,
+	TableContainer,
+	Tbody,
+	Td,
+	Tr,
+	Text,
+	useDisclosure
+} from '@chakra-ui/react'
 const data = [
 	{
 		name: 'Page A',
@@ -53,7 +72,7 @@ const data = [
 
 export function Plot() {
 	return (
-		<ResponsiveContainer width='100%' height={400}>
+		<ResponsiveContainer width={750} height={250}>
 			<ComposedChart
 				width={500}
 				height={400}

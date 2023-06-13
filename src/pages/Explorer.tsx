@@ -81,11 +81,11 @@ export default function Explorer(): JSX.Element {
 					await contract.getActiveRentingProjects()
 				)
 
-				console.log('myRentProject: ', myRentProject)
-
 				const myNotProjects: MonitoringArea[] = convertToMonitoringArea(
 					await contract.getProjectsNotOwnedWithoutRent()
 				)
+
+				console.log(await contract.getProjectsNotOwnedWithoutRent())
 
 				const allProject: MonitoringArea[] = [
 					...myProjects,
@@ -93,7 +93,7 @@ export default function Explorer(): JSX.Element {
 					...myNotProjects
 				]
 
-				if (Array.isArray(myProjects && myNotProjects)) {
+				if (Array.isArray(allProject)) {
 					setProjectsNotOwned(myNotProjects)
 					setProjects(allProject)
 					setFiltedProjects(allProject)

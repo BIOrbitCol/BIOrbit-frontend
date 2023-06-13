@@ -199,7 +199,7 @@ export default function Map(props: Props) {
 					if (geoJson.properties.state === 1) {
 						setIsHidden(true)
 					} else if (
-						geoJson.properties.state === 0 ||
+						geoJson.properties.state === 0 &&
 						geoJson.properties?.rentInfo?.some(
 							(rent: RentInfo) =>
 								rent.renter === address && new Date(rent.expiry) > new Date()
