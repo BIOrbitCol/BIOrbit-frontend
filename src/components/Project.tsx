@@ -147,15 +147,21 @@ export function Project(props: Props): JSX.Element {
 							</Td>
 							<Td fontSize={'xs'}>{project.owner}</Td>
 						</Tr>
-						{project.owner !== address &&
-							project?.rentInfo?.map((rent: RentInfo, index: number) => (
-								<Tr key={index}>
-									<Td fontWeight={'bold'} fontSize={'xs'} color={'red.700'}>
-										Expiry
-									</Td>
-									<Td fontSize={'xs'}>{rent.expiry}</Td>
-								</Tr>
-							))}
+						{project?.rentInfo?.map((rent: RentInfo, index: number) => {
+							if (
+								rent.renter === address &&
+								new Date(rent.expiry) > new Date()
+							) {
+								return (
+									<Tr key={index}>
+										<Td fontWeight={'bold'} fontSize={'xs'} color={'red.700'}>
+											Expiry
+										</Td>
+										<Td fontSize={'xs'}>{rent.expiry}</Td>
+									</Tr>
+								)
+							}
+						})}
 					</Tbody>
 				</Table>
 			</TableContainer>
