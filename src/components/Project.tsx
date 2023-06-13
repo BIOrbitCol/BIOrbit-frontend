@@ -13,7 +13,11 @@ import {
 	Link
 } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
-import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
+import {
+	Footprint,
+	MonitoringArea,
+	RentInfo
+} from '@/models/monitoring-area.model'
 import { useEffect, useRef } from 'react'
 import ReactReadMoreReadLess from 'react-read-more-read-less'
 import scrollIntoView from 'scroll-into-view'
@@ -139,10 +143,19 @@ export function Project(props: Props): JSX.Element {
 						</Tr>
 						<Tr>
 							<Td fontWeight={'bold'} fontSize={'xs'}>
-								owner
+								Owner
 							</Td>
 							<Td fontSize={'xs'}>{project.owner}</Td>
 						</Tr>
+						{project?.rentInfo &&
+							project?.rentInfo.map((rent: RentInfo, index: number) => (
+								<Tr key={index}>
+									<Td fontWeight={'bold'} fontSize={'xs'} color={'red.700'}>
+										Expiry
+									</Td>
+									<Td fontSize={'xs'}>{rent.expiry}</Td>
+								</Tr>
+							))}
 					</Tbody>
 				</Table>
 			</TableContainer>
