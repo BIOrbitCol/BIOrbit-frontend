@@ -16,7 +16,11 @@ import 'leaflet-measure/dist/leaflet-measure.css'
 import { BIOrbit } from '../../@types/typechain-types'
 import countriesJson from '@/assets/json/countries.json'
 import { Countries, Country } from '@/models/countries.model'
-import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
+import {
+	Footprint,
+	MonitoringArea,
+	RentInfo
+} from '@/models/monitoring-area.model'
 import { DrawControl } from './DrawControl'
 import LayerOptions from './LayerOptions'
 import { StatsModal } from './StatsModal'
@@ -110,6 +114,7 @@ export default function Map(props: Props) {
               `)
 						} else {
 							setIsHidden(true)
+							setGeoJsonSelected(null)
 							geoJsonLayer.bindPopup(`
                 <div class="${style['bind-container']}">
                   <p class="${style['bind-container__name']}">Monitoring 🛰</p>
@@ -117,18 +122,32 @@ export default function Map(props: Props) {
               `)
 						}
 					} else {
-						setIsHidden(true)
-						setIsRenting(true)
 						if (
+							geoJsonObject.properties?.rentInfo?.some(
+								(rent: RentInfo) => rent.renter === address
+							)
+						) {
+							setIsHidden(false)
+							setGeoJsonSelected(geoJsonObject)
+							geoJsonLayer.bindPopup(`
+                <div class="${style['bind-container']}">
+                <button class="${style['chakra-button']} ${style['chakra-button-xs']} ${style['chakra-button-blue']}" onclick="window.dispatchEvent(new CustomEvent('popupButtonView'))">View</button>
+                </div>
+              `)
+						} else if (
 							geoJsonObject.properties.state === 0 &&
 							!geoJsonObject.properties.isRent
 						) {
+							setIsHidden(true)
+							setGeoJsonSelected(null)
 							geoJsonLayer.bindPopup(`
                 <div class="${style['bind-container']}">
                   <p class="${style['bind-container__name']}">Not for rent 🔒️</p>
                 </div>
               `)
 						} else {
+							setIsHidden(true)
+							setGeoJsonSelected(null)
 							geoJsonLayer.bindPopup(`
                 <div class="${style['bind-container']}">
                   <p class="${style['bind-container__name']}">Locked 🔒️</p>
@@ -178,6 +197,13 @@ export default function Map(props: Props) {
 					centerMap(geoLayer)
 					if (geoJson.properties.state === 1) {
 						setIsHidden(true)
+					} else if (
+						geoJson.properties.state === 0 ||
+						geoJson.properties?.rentInfo?.some(
+							(rent: RentInfo) => rent.renter === address
+						)
+					) {
+						setIsHidden(false)
 					}
 				}
 			})
@@ -219,12 +245,21 @@ export default function Map(props: Props) {
 					style={{
 						fillOpacity: 0.01,
 						weight: 2,
-						color: geoJson.properties.owner == address ? ' yellow' : 'red'
+						color:
+							geoJson.properties.owner == address ||
+							geoJson.properties?.rentInfo?.some(
+								(rent: RentInfo) => rent.renter === address
+							)
+								? ' yellow'
+								: 'red'
 					}}
 				>
 					{geoJson.properties.state === 0 &&
 						geoJson.properties.isRent &&
-						isRenting && (
+						isRenting &&
+						!geoJson.properties?.rentInfo?.some(
+							(rent: RentInfo) => rent.renter === address
+						) && (
 							<Popup>
 								<Box
 									margin={1}

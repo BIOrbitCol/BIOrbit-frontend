@@ -147,8 +147,8 @@ export function Project(props: Props): JSX.Element {
 							</Td>
 							<Td fontSize={'xs'}>{project.owner}</Td>
 						</Tr>
-						{project?.rentInfo &&
-							project?.rentInfo.map((rent: RentInfo, index: number) => (
+						{project.owner !== address &&
+							project?.rentInfo?.map((rent: RentInfo, index: number) => (
 								<Tr key={index}>
 									<Td fontWeight={'bold'} fontSize={'xs'} color={'red.700'}>
 										Expiry
