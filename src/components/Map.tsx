@@ -1,8 +1,8 @@
 import style from '../styles/Map.module.css'
-import { useDisclosure } from '@chakra-ui/react'
+import { Box, Button, useDisclosure } from '@chakra-ui/react'
 import { Geometry } from 'geojson'
 import { useEffect, useRef, useState } from 'react'
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
+import { MapContainer, TileLayer, GeoJSON, Popup } from 'react-leaflet'
 import { useAccount } from 'wagmi'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -20,6 +20,8 @@ import { Footprint, MonitoringArea } from '@/models/monitoring-area.model'
 import { DrawControl } from './DrawControl'
 import LayerOptions from './LayerOptions'
 import { StatsModal } from './StatsModal'
+import { Field, Form, Formik, FormikHelpers } from 'formik'
+import { ethers } from 'ethers'
 
 type GeoJsonData = GeoJSON.Feature<
 	GeoJSON.Geometry,
@@ -36,11 +38,13 @@ type Props = {
 	isHidden: boolean
 	polygonRef: React.MutableRefObject<L.FeatureGroup | null>
 	projects: MonitoringArea[]
+	showDrawControl: boolean
 	selectedId: number | null
 	setCoordinates: React.Dispatch<React.SetStateAction<number[][]>>
 	setIsHidden: React.Dispatch<React.SetStateAction<boolean>>
+	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 	setSelectedId: React.Dispatch<React.SetStateAction<number | null>>
-	showDrawControl: boolean
+	setSincronized: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export default function Map(props: Props) {
@@ -49,11 +53,13 @@ export default function Map(props: Props) {
 		isHidden,
 		polygonRef,
 		projects,
+		showDrawControl,
 		selectedId,
 		setCoordinates,
 		setIsHidden,
+		setIsLoading,
 		setSelectedId,
-		showDrawControl
+		setSincronized
 	} = props
 
 	const mapRef = useRef<L.Map | null>(null)
@@ -61,8 +67,8 @@ export default function Map(props: Props) {
 	const [geoJsonSelected, setGeoJsonSelected] = useState<GeoJsonData | null>(
 		null
 	)
-	const [geoJsonClicked, setGeoJsonClicked] = useState<GeoJsonData | null>(null)
 	const [geoJsonData, setGeoJsonData] = useState<GeoJsonData[]>([])
+	const [isRenting, setIsRenting] = useState<boolean>(false)
 	const [layerName, setLayerName] = useState<string>('Transparent')
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
@@ -92,10 +98,11 @@ export default function Map(props: Props) {
 
 				if (geoJsonObject.type === 'Feature') {
 					setSelectedId(geoJsonObject.properties.id)
+
 					if (geoJsonObject.properties.owner === address) {
 						if (geoJsonObject.properties.state === 0) {
-							setGeoJsonClicked(geoJsonObject)
 							setIsHidden(false)
+							setGeoJsonSelected(geoJsonObject)
 							geoJsonLayer.bindPopup(`
                 <div class="${style['bind-container']}">
                 <button class="${style['chakra-button']} ${style['chakra-button-xs']} ${style['chakra-button-blue']}" onclick="window.dispatchEvent(new CustomEvent('popupButtonView'))">View</button>
@@ -111,23 +118,8 @@ export default function Map(props: Props) {
 						}
 					} else {
 						setIsHidden(true)
+						setIsRenting(true)
 						if (
-							geoJsonObject.properties.state === 0 &&
-							geoJsonObject.properties.isRent
-						) {
-							geoJsonLayer.bindPopup(`
-                <div class="${style['bind-container']}">
-                  <p class="${style['bind-container__name']}">Locked 🔒️</p>
-                  <button class="${style['chakra-button']} ${
-								style['chakra-button-xs']
-							} ${
-								style['chakra-button-blue']
-							}" onclick="window.dispatchEvent(new CustomEvent('popupButtonView'))">Rent</button> ${
-								geoJsonObject.properties.rentCost + ' MATIC'
-							}
-                </div>
-              `)
-						} else if (
 							geoJsonObject.properties.state === 0 &&
 							!geoJsonObject.properties.isRent
 						) {
@@ -184,12 +176,9 @@ export default function Map(props: Props) {
 				if (geoJson.properties.id === selectedId) {
 					const geoLayer = L.geoJSON(geoJson)
 					centerMap(geoLayer)
-					if (geoJson.properties.state === 0) {
-						setGeoJsonSelected(geoJson)
-					} else {
+					if (geoJson.properties.state === 1) {
 						setIsHidden(true)
 					}
-					return
 				}
 			})
 		}
@@ -232,7 +221,90 @@ export default function Map(props: Props) {
 						weight: 2,
 						color: geoJson.properties.owner == address ? ' yellow' : 'red'
 					}}
-				/>
+				>
+					{geoJson.properties.state === 0 &&
+						geoJson.properties.isRent &&
+						isRenting && (
+							<Popup>
+								<Box
+									margin={1}
+									padding={0}
+									display={'flex'}
+									flexDirection={'column'}
+									alignItems={'center'}
+									justifyContent={'center'}
+									gap={'1rem'}
+								>
+									<p className={style['bind-container__name']}>Locked 🔒️</p>
+									<Formik
+										initialValues={{
+											name: ''
+										}}
+										onSubmit={(
+											values: {
+												name: string
+											},
+											actions: FormikHelpers<{
+												name: string
+											}>
+										) => {
+											setTimeout(async () => {
+												setIsRenting(false)
+												setIsLoading(true)
+
+												try {
+													if (biorbitContract) {
+														if (selectedId) {
+															console.log(
+																ethers.utils.parseUnits(
+																	geoJson.properties.rentCost,
+																	'ether'
+																)
+															)
+															const rentProjectTx =
+																await biorbitContract.rentProject(
+																	geoJson.properties.id,
+																	{
+																		gasLimit: 2500000,
+																		value: ethers.utils.parseUnits(
+																			geoJson.properties.rentCost,
+																			'ether'
+																		)
+																	}
+																)
+
+															await rentProjectTx.wait(1)
+															setSincronized(false)
+															actions.setSubmitting(false)
+														}
+													}
+												} catch (error) {
+													console.error(error)
+													setIsRenting(true)
+													setIsLoading(false)
+												}
+											}, 1000)
+										}}
+									>
+										{props => (
+											<Form>
+												<Button
+													size={'xs'}
+													fontSize={'xs'}
+													colorScheme='blue'
+													isLoading={props.isSubmitting}
+													type='submit'
+												>
+													Rent
+												</Button>
+											</Form>
+										)}
+									</Formik>
+									{geoJson.properties.rentCost + ' MATIC'}
+								</Box>
+							</Popup>
+						)}
+				</GeoJSON>
 			))}
 			{!isHidden && (
 				<LayerOptions
@@ -244,11 +316,11 @@ export default function Map(props: Props) {
 					themeColor={'blue.500'}
 				/>
 			)}
-			{geoJsonClicked?.properties.id && (
+			{geoJsonSelected?.properties.id && (
 				<StatsModal
 					biorbitContract={biorbitContract}
 					isOpen={isOpen}
-					geoJson={geoJsonClicked}
+					geoJson={geoJsonSelected}
 					onOpen={onOpen}
 					onClose={onClose}
 				/>

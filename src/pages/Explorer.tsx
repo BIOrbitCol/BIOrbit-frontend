@@ -81,6 +81,8 @@ export default function Explorer(): JSX.Element {
 					await contract.getActiveRentingProjects()
 				)
 
+				console.log('myRentProject: ', myRentProject)
+
 				const myNotProjects: MonitoringArea[] = convertToMonitoringArea(
 					await contract.getProjectsNotOwnedWithoutRent()
 				)
@@ -156,7 +158,9 @@ export default function Explorer(): JSX.Element {
 				selectedId={selectedId}
 				setCoordinates={setCoordinates}
 				setIsHidden={setIsHidden}
+				setIsLoading={setIsLoading}
 				setSelectedId={setSelectedId}
+				setSincronized={setSincronized}
 			/>
 		</>
 	)
@@ -205,7 +209,7 @@ function convertToMonitoringArea(data: any[]): MonitoringArea[] {
 			const rentCost: string = ethers.utils.formatEther(rentCostData)
 
 			const rentInfo: RentInfo[] = rentInfoData.map((rentInfo: any) => {
-				let milliseconds: number = rentInfo[0] * 1000
+				let milliseconds: number = rentInfo[1] * 1000
 				let dateObject: Date = new Date(milliseconds)
 				let humanDateFormat: string = dateObject.toLocaleString([], {
 					hour12: false
