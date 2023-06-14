@@ -161,6 +161,7 @@ export function Project(props: Props): JSX.Element {
 									</Tr>
 								)
 							}
+							return null
 						})}
 					</Tbody>
 				</Table>
