@@ -74,6 +74,7 @@ export default function Map(props: Props) {
 	const [geoJsonData, setGeoJsonData] = useState<GeoJsonData[]>([])
 	const [isRenting, setIsRenting] = useState<boolean>(false)
 	const [layerName, setLayerName] = useState<string>('Transparent')
+	const [layerTime, setLayerTime] = useState('2022-01-01/2022-12-31')
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const { address } = useAccount()
@@ -82,6 +83,18 @@ export default function Map(props: Props) {
 		{ label: 'Transparent', name: 'Transparent' },
 		{ label: 'RGB', name: 'RGB' },
 		{ label: 'NDVI', name: 'NDVI' }
+	]
+
+	let layerTimes = [
+		{ label: '2015', name: '2015-01-01/2015-12-31' },
+		{ label: '2016', name: '2016-01-01/2016-12-31' },
+		{ label: '2017', name: '2017-01-01/2017-12-31' },
+		{ label: '2018', name: '2018-01-01/2018-12-31' },
+		{ label: '2019', name: '2019-01-01/2019-12-31' },
+		{ label: '2020', name: '2020-01-01/2020-12-31' },
+		{ label: '2021', name: '2021-01-01/2021-12-31' },
+		{ label: '2022', name: '2022-01-01/2022-12-31' },
+		{ label: '2023', name: '2023-01-01/2023-12-31' }
 	]
 
 	const centerMap = (geoLayer: L.GeoJSON<any, Geometry>) => {
@@ -345,14 +358,34 @@ export default function Map(props: Props) {
 				</GeoJSON>
 			))}
 			{!isHidden && (
-				<LayerOptions
-					activeOption={layerName}
-					geoJsonProject={geoJsonSelected}
-					mapRef={mapRef}
-					options={layerNames}
-					setOption={setLayerName}
-					themeColor={'blue.500'}
-				/>
+				<Box
+					position='absolute'
+					zIndex={1000}
+					bottom={'3vh'}
+					left={'102vh'}
+					display={'flex'}
+					alignItems={'center'}
+					justifyItems={'center'}
+					flexDir={'column'}
+					gap={3}
+				>
+					<LayerOptions
+						options={layerTimes}
+						setOption={setLayerTime}
+						activeOption={layerTime}
+						themeColor={'blue.500'}
+						geoJsonProject={geoJsonSelected}
+						mapRef={mapRef}
+					/>
+					<LayerOptions
+						activeOption={layerName}
+						geoJsonProject={geoJsonSelected}
+						mapRef={mapRef}
+						options={layerNames}
+						setOption={setLayerName}
+						themeColor={'blue.500'}
+					/>
+				</Box>
 			)}
 			{geoJsonSelected?.properties.id && (
 				<StatsModal

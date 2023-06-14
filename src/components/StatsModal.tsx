@@ -16,8 +16,11 @@ import {
 	Td,
 	Tr,
 	Text,
-	useDisclosure
+	useDisclosure,
+	Link
 } from '@chakra-ui/react'
+import { DeleteIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icons'
+
 import Blockies from 'react-blockies'
 import { useState } from 'react'
 import { BIOrbit } from '../../@types/typechain-types'
@@ -28,6 +31,8 @@ import {
 } from '@/models/monitoring-area.model'
 import { Plot } from './Plot'
 import { Project } from './Project'
+import { color } from 'framer-motion'
+import { useAccount } from 'wagmi'
 
 interface Coordinates {
 	latitude: string
@@ -55,6 +60,8 @@ type Props = {
 export function StatsModal(props: Props) {
 	const { biorbitContract, isOpen, geoJson, onOpen, onClose } = props
 
+	const { address } = useAccount()
+
 	let coordinates: Coordinates | null = null
 
 	if (geoJson?.properties.footprint) {
@@ -66,11 +73,50 @@ export function StatsModal(props: Props) {
 			<Modal onClose={onClose} size={'6xl'} isOpen={isOpen}>
 				<ModalOverlay />
 				<ModalContent>
-					<ModalHeader>{geoJson?.properties?.name}</ModalHeader>
+					<ModalHeader>
+						{geoJson?.properties?.name}{' '}
+						{geoJson?.properties?.owner === address && (
+							<EditIcon
+								color={'blue.700'}
+								cursor={'pointer'}
+								_hover={{ color: 'blue.400' }}
+							/>
+						)}
+					</ModalHeader>
+					<Text
+						position={'absolute'}
+						right={0}
+						marginTop={4}
+						marginRight={'60px'}
+						fontSize={'xs'}
+					>
+						<Link
+							marginRight={1}
+							size='sm'
+							href={geoJson?.properties?.uri}
+							isExternal
+						>
+							Official Website
+						</Link>
+						{geoJson?.properties?.owner === address && (
+							<EditIcon
+								color={'blue.700'}
+								cursor={'pointer'}
+								_hover={{ color: 'blue.400' }}
+							/>
+						)}
+					</Text>
 					<ModalCloseButton />
 					<ModalBody>
 						<Text marginBottom={'32px'} fontSize={'xs'}>
-							{geoJson?.properties?.description}
+							{geoJson?.properties?.description}{' '}
+							{geoJson?.properties?.owner === address && (
+								<EditIcon
+									color={'blue.700'}
+									cursor={'pointer'}
+									_hover={{ color: 'blue.400' }}
+								/>
+							)}
 						</Text>
 						<Spacer />
 						<Box
@@ -90,6 +136,13 @@ export function StatsModal(props: Props) {
 							</Text>
 							<Text fontSize='xs'>
 								<strong>Country</strong> {geoJson?.properties?.country}{' '}
+								{geoJson?.properties?.owner === address && (
+									<EditIcon
+										color={'blue.700'}
+										cursor={'pointer'}
+										_hover={{ color: 'blue.400' }}
+									/>
+								)}
 							</Text>
 							<Text fontSize='xs'>
 								<strong>Owner</strong> {geoJson?.properties?.owner}{' '}
@@ -146,9 +199,37 @@ export function StatsModal(props: Props) {
 								<Plot />
 							</Box>
 						</Box>
+						{geoJson?.properties?.owner === address && (
+							<Box
+								marginTop={'24px'}
+								display={'flex'}
+								flexDir={'column'}
+								justifyItems={'left'}
+								gap={3}
+							>
+								<Text position={'relative'} left={0} fontSize='xs'>
+									<strong>Rent NFT:</strong> active{' '}
+									<EditIcon
+										color={'blue.700'}
+										cursor={'pointer'}
+										_hover={{ color: 'blue.400' }}
+									/>
+								</Text>
+								<Text position={'relative'} left={0} fontSize='xs'>
+									<strong>Burn NFT</strong>{' '}
+									<DeleteIcon
+										color={'red.700'}
+										cursor={'pointer'}
+										_hover={{ color: 'red.400' }}
+									/>
+								</Text>
+							</Box>
+						)}
 					</ModalBody>
 					<ModalFooter>
-						<Button onClick={onClose}>Close</Button>
+						<Button colorScheme='blue' onClick={onClose}>
+							Close
+						</Button>
 					</ModalFooter>
 				</ModalContent>
 			</Modal>

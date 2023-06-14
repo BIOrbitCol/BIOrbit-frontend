@@ -183,7 +183,7 @@ export function Project(props: Props): JSX.Element {
 				)}
 				<Text fontSize={'xs'}>
 					<Link size='sm' href={project.uri} isExternal>
-						View on IPFS <ExternalLinkIcon />
+						Official Website <ExternalLinkIcon />
 					</Link>
 				</Text>
 			</Box>

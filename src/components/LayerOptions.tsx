@@ -74,11 +74,8 @@ export function LayerOptions(props: Props) {
 	return (
 		<ButtonGroup
 			isAttached
-			position='absolute'
-			bottom={'3vh'}
-			left={'125vh'}
-			zIndex={1000}
 			size='sm'
+			maxWidth={'max-content'}
 			rounded={'sm'}
 			borderStyle={'solid'}
 			borderWidth={'1px'}

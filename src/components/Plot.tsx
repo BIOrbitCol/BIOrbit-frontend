@@ -72,10 +72,10 @@ const data = [
 
 export function Plot() {
 	return (
-		<ResponsiveContainer width={750} height={250}>
+		<>
 			<ComposedChart
-				width={500}
-				height={400}
+				width={750}
+				height={250}
 				data={data}
 				margin={{
 					top: 20,
@@ -97,6 +97,6 @@ export function Plot() {
 				<Bar dataKey='pv' barSize={20} fill='#413ea0' />
 				<Line type='monotone' dataKey='uv' stroke='#ff7300' />
 			</ComposedChart>
-		</ResponsiveContainer>
+		</>
 	)
 }
