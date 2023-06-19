@@ -18,6 +18,8 @@ import countriesJson from '@/assets/json/countries.json'
 import { Countries, Country } from '@/models/countries.model'
 import {
 	Footprint,
+	ImageTimeSeries,
+	Monitoring,
 	MonitoringArea,
 	RentInfo
 } from '@/models/monitoring-area.model'
@@ -26,6 +28,11 @@ import LayerOptions from './LayerOptions'
 import { StatsModal } from './StatsModal'
 import { Field, Form, Formik, FormikHelpers } from 'formik'
 import { ethers } from 'ethers'
+
+interface LayerTime {
+	name: string
+	label: string
+}
 
 type GeoJsonData = GeoJSON.Feature<
 	GeoJSON.Geometry,
@@ -76,6 +83,8 @@ export default function Map(props: Props) {
 	const [layerName, setLayerName] = useState<string>('Transparent')
 	const [layerTime, setLayerTime] = useState('2022-01-01/2022-12-31')
 
+	const [layerTimes, setLayerTimes] = useState<LayerTime[]>([])
+
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const { address } = useAccount()
 
@@ -83,18 +92,6 @@ export default function Map(props: Props) {
 		{ label: 'Transparent', name: 'Transparent' },
 		{ label: 'RGB', name: 'RGB' },
 		{ label: 'NDVI', name: 'NDVI' }
-	]
-
-	let layerTimes = [
-		{ label: '2015', name: '2015-01-01/2015-12-31' },
-		{ label: '2016', name: '2016-01-01/2016-12-31' },
-		{ label: '2017', name: '2017-01-01/2017-12-31' },
-		{ label: '2018', name: '2018-01-01/2018-12-31' },
-		{ label: '2019', name: '2019-01-01/2019-12-31' },
-		{ label: '2020', name: '2020-01-01/2020-12-31' },
-		{ label: '2021', name: '2021-01-01/2021-12-31' },
-		{ label: '2022', name: '2022-01-01/2022-12-31' },
-		{ label: '2023', name: '2023-01-01/2023-12-31' }
 	]
 
 	const centerMap = (geoLayer: L.GeoJSON<any, Geometry>) => {
@@ -220,6 +217,11 @@ export default function Map(props: Props) {
 					) {
 						setIsHidden(false)
 						setGeoJsonSelected(geoJson)
+						if (geoJson.properties.imageTimeSeries) {
+							setLayerTimes(
+								generateLayerTimeData(geoJson.properties.imageTimeSeries)
+							)
+						}
 					}
 				}
 			})
@@ -399,4 +401,14 @@ export default function Map(props: Props) {
 			)}
 		</MapContainer>
 	)
+}
+
+function generateLayerTimeData(imageTimeSeries: ImageTimeSeries): LayerTime[] {
+	return imageTimeSeries.detectionDate.map(dateStr => {
+		const date = dateStr.split('-').slice(0, 3).join('-')
+		return {
+			label: date,
+			name: date
+		}
+	})
 }

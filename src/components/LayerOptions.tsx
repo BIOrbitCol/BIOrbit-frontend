@@ -37,6 +37,7 @@ export function LayerOptions(props: Props) {
 				}
 			})
 		}
+		console.log('geoJsonProject.properties: ', geoJsonProject?.properties)
 		if (option === 'NDVI' && geoJsonProject && geoJsonProject.properties) {
 			const geoLayer = L.geoJSON(geoJsonProject)
 			const imageOverlay = L.imageOverlay(
