@@ -3,15 +3,26 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { Feature, GeoJsonProperties, Geometry } from 'geojson'
 import * as L from 'leaflet'
+import { MonitoringArea } from '@/models/monitoring-area.model'
 
 interface Option {
 	label: string
 	name: string
 }
 
+type GeoJsonData = GeoJSON.Feature<
+	GeoJSON.Geometry,
+	GeoJSON.GeoJsonProperties
+> & {
+	properties: {
+		ndvi: string
+		rgb: string
+	} & MonitoringArea
+}
+
 type Props = {
 	activeOption?: string
-	geoJsonProject: Feature<Geometry, GeoJsonProperties> | null
+	geoJsonProject: GeoJsonData | null
 	mapRef: React.MutableRefObject<L.Map | null>
 	ndviSelected?: boolean
 	options: Option[]
@@ -47,6 +58,7 @@ export function LayerOptions(props: Props) {
 			})
 		}
 		if (option === 'NDVI' && geoJsonProject && geoJsonProject.properties) {
+			// TODO: Doing fetch to NFT metadata
 			const geoLayer = L.geoJSON(geoJsonProject)
 			const imageOverlay = L.imageOverlay(
 				geoJsonProject.properties.ndvi,
@@ -60,7 +72,6 @@ export function LayerOptions(props: Props) {
 			if (mapRef.current) {
 				imageOverlay.addTo(mapRef.current)
 			}
-
 			if (setNdviSelected) {
 				setNdviSelected(true)
 			}
