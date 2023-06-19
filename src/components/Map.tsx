@@ -219,6 +219,7 @@ export default function Map(props: Props) {
 						)
 					) {
 						setIsHidden(false)
+						setGeoJsonSelected(geoJson)
 					}
 				}
 			})
@@ -370,12 +371,12 @@ export default function Map(props: Props) {
 					gap={3}
 				>
 					<LayerOptions
-						options={layerTimes}
-						setOption={setLayerTime}
 						activeOption={layerTime}
-						themeColor={'blue.500'}
 						geoJsonProject={geoJsonSelected}
 						mapRef={mapRef}
+						options={layerTimes}
+						setOption={setLayerTime}
+						themeColor={'blue.500'}
 					/>
 					<LayerOptions
 						activeOption={layerName}

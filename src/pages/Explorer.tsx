@@ -85,8 +85,6 @@ export default function Explorer(): JSX.Element {
 					await contract.getProjectsNotOwnedWithoutRent()
 				)
 
-				console.log(await contract.getProjectsNotOwnedWithoutRent())
-
 				const allProject: MonitoringArea[] = [
 					...myProjects,
 					...myRentProject,

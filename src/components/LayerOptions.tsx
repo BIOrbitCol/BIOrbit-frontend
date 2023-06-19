@@ -9,11 +9,11 @@ interface Option {
 }
 
 type Props = {
-	geoJsonProject: Feature<Geometry, GeoJsonProperties> | null
-	options: Option[]
-	mapRef: React.MutableRefObject<L.Map | null>
-	setOption: Dispatch<SetStateAction<string>>
 	activeOption: string
+	geoJsonProject: Feature<Geometry, GeoJsonProperties> | null
+	mapRef: React.MutableRefObject<L.Map | null>
+	options: Option[]
+	setOption: Dispatch<SetStateAction<string>>
 	themeColor: string
 }
 
@@ -85,19 +85,19 @@ export function LayerOptions(props: Props) {
 		>
 			{options.map((option: Option, index: number) => (
 				<Button
-					onClick={() => imageHandle(option.name)}
-					rounded={'none'}
 					key={option.name}
+					rounded={'none'}
+					backgroundColor={activeOption == option.name ? color : 'white'}
 					border={'none'}
-					borderRightWidth={index < options.length - 1 ? '1px' : '0px'}
 					borderRightColor={'gray.300'}
 					borderRightStyle={'solid'}
-					backgroundColor={activeOption == option.name ? color : 'white'}
+					borderRightWidth={index < options.length - 1 ? '1px' : '0px'}
 					color={activeOption == option.name ? 'white' : 'gray.600'}
+					fontWeight='medium'
 					_hover={{
 						bg: activeOption == option.name ? color : 'gray.200'
 					}}
-					fontWeight='medium'
+					onClick={() => imageHandle(option.name)}
 				>
 					{option.label}
 				</Button>
