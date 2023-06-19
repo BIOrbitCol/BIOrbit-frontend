@@ -14,19 +14,16 @@ import 'leaflet-measure'
 import 'leaflet-measure/dist/leaflet-measure.js'
 import 'leaflet-measure/dist/leaflet-measure.css'
 import { BIOrbit } from '../../@types/typechain-types'
-import countriesJson from '@/assets/json/countries.json'
-import { Countries, Country } from '@/models/countries.model'
 import {
 	Footprint,
 	ImageTimeSeries,
-	Monitoring,
 	MonitoringArea,
 	RentInfo
 } from '@/models/monitoring-area.model'
 import { DrawControl } from './DrawControl'
 import LayerOptions from './LayerOptions'
 import { StatsModal } from './StatsModal'
-import { Field, Form, Formik, FormikHelpers } from 'formik'
+import { Form, Formik, FormikHelpers } from 'formik'
 import { ethers } from 'ethers'
 
 interface LayerTime {
@@ -79,6 +76,7 @@ export default function Map(props: Props) {
 		null
 	)
 	const [geoJsonData, setGeoJsonData] = useState<GeoJsonData[]>([])
+	const [ndviSelected, setNdviSelected] = useState<boolean>(false)
 	const [isRenting, setIsRenting] = useState<boolean>(false)
 	const [layerName, setLayerName] = useState<string>('Transparent')
 	const [layerTime, setLayerTime] = useState('')
@@ -89,7 +87,6 @@ export default function Map(props: Props) {
 
 	let layerNames = [
 		{ label: 'Transparent', name: 'Transparent' },
-		{ label: 'RGB', name: 'RGB' },
 		{ label: 'NDVI', name: 'NDVI' }
 	]
 
@@ -375,6 +372,7 @@ export default function Map(props: Props) {
 						activeOption={layerTime}
 						geoJsonProject={geoJsonSelected}
 						mapRef={mapRef}
+						ndviSelected={ndviSelected}
 						options={layerTimes}
 						setOption={setLayerTime}
 						themeColor={'blue.500'}
@@ -384,6 +382,7 @@ export default function Map(props: Props) {
 						geoJsonProject={geoJsonSelected}
 						mapRef={mapRef}
 						options={layerNames}
+						setNdviSelected={setNdviSelected}
 						setOption={setLayerName}
 						themeColor={'blue.500'}
 					/>
