@@ -27,13 +27,16 @@ export function LayerOptions(props: Props) {
 		setOption,
 		themeColor
 	} = props
-	const color: string = themeColor || 'blue.400'
+	const color = themeColor || 'blue.400'
 
-	const [activeCarousel, setActiveCarousel] = useState<number>(0)
-	const visibleOptions: number = 4
+	const visibleOptions = 4
+	const [activeIndex, setActiveIndex] = useState(
+		options.length == 3 ? 0 : options.length - visibleOptions
+	)
 
 	const handleImageChange = (option: string) => {
 		if (mapRef.current) {
+			// Remove existing image overlays
 			mapRef.current.eachLayer(layer => {
 				if (layer instanceof L.ImageOverlay) {
 					mapRef.current?.removeLayer(layer)
@@ -77,11 +80,11 @@ export function LayerOptions(props: Props) {
 	}
 
 	const handlePreviousOptions = () => {
-		setActiveCarousel(prevIndex => Math.max(prevIndex - 1, 0))
+		setActiveIndex(prevIndex => Math.max(prevIndex - 1, 0))
 	}
 
 	const handleNextOptions = () => {
-		setActiveCarousel(prevIndex =>
+		setActiveIndex(prevIndex =>
 			Math.min(prevIndex + 1, options.length - visibleOptions)
 		)
 	}
@@ -108,12 +111,12 @@ export function LayerOptions(props: Props) {
 					borderRightColor={'gray.300'}
 					borderRightStyle={'solid'}
 					borderRightWidth={'1px'}
-					isDisabled={activeCarousel === 0}
+					isDisabled={activeIndex === 0}
 				/>
 			)}
 
 			{options
-				.slice(activeCarousel, activeCarousel + visibleOptions)
+				.slice(activeIndex, activeIndex + visibleOptions)
 				.map((option: Option, index: number) => (
 					<Button
 						key={option.name}
@@ -141,7 +144,7 @@ export function LayerOptions(props: Props) {
 					rounded={'none'}
 					onClick={handleNextOptions}
 					color={color}
-					isDisabled={activeCarousel >= options.length - visibleOptions} // Disable next button when at the end
+					isDisabled={activeIndex >= options.length - visibleOptions} // Disable next button when at the end
 				/>
 			)}
 		</ButtonGroup>

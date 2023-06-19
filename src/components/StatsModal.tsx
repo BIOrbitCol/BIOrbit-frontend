@@ -2,6 +2,7 @@ import {
 	Box,
 	Button,
 	Heading,
+	Link,
 	Modal,
 	ModalBody,
 	ModalCloseButton,
@@ -15,24 +16,19 @@ import {
 	Tbody,
 	Td,
 	Tr,
-	Text,
-	useDisclosure,
-	Link
+	Text
 } from '@chakra-ui/react'
-import { DeleteIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icons'
+import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
 
 import Blockies from 'react-blockies'
-import { useState } from 'react'
 import { BIOrbit } from '../../@types/typechain-types'
 import {
 	Footprint,
 	MonitoringArea,
 	RentInfo
 } from '@/models/monitoring-area.model'
-import { Plot } from './Plot'
-import { Project } from './Project'
-import { color } from 'framer-motion'
 import { useAccount } from 'wagmi'
+import { Plot } from './Plot'
 
 interface Coordinates {
 	latitude: string

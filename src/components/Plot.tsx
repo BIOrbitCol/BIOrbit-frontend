@@ -1,36 +1,16 @@
 import React from 'react'
 import {
-	ComposedChart,
-	Line,
 	Area,
 	Bar,
-	XAxis,
-	YAxis,
+	ComposedChart,
 	CartesianGrid,
-	Tooltip,
 	Legend,
-	ResponsiveContainer
+	Line,
+	Tooltip,
+	XAxis,
+	YAxis
 } from 'recharts'
-import {
-	Box,
-	Button,
-	Heading,
-	Modal,
-	ModalBody,
-	ModalCloseButton,
-	ModalContent,
-	ModalFooter,
-	ModalHeader,
-	ModalOverlay,
-	Spacer,
-	Table,
-	TableContainer,
-	Tbody,
-	Td,
-	Tr,
-	Text,
-	useDisclosure
-} from '@chakra-ui/react'
+
 const data = [
 	{
 		name: 'Page A',
