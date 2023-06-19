@@ -1,5 +1,6 @@
-import { ButtonGroup, Button } from '@chakra-ui/react'
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
+import { Button, ButtonGroup, IconButton } from '@chakra-ui/react'
+import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
+import { Dispatch, SetStateAction, useState } from 'react'
 import { Feature, GeoJsonProperties, Geometry } from 'geojson'
 import * as L from 'leaflet'
 
@@ -9,11 +10,11 @@ interface Option {
 }
 
 type Props = {
-	activeOption: string
+	activeOption?: string
 	geoJsonProject: Feature<Geometry, GeoJsonProperties> | null
 	mapRef: React.MutableRefObject<L.Map | null>
 	options: Option[]
-	setOption: Dispatch<SetStateAction<string>>
+	setOption?: Dispatch<SetStateAction<string>>
 	themeColor: string
 }
 
@@ -26,18 +27,19 @@ export function LayerOptions(props: Props) {
 		setOption,
 		themeColor
 	} = props
-	let color = themeColor || 'blue.400'
+	const color: string = themeColor || 'blue.400'
 
-	const imageHandle = (option: string) => {
+	const [activeCarousel, setActiveCarousel] = useState<number>(0)
+	const visibleOptions: number = 4
+
+	const handleImageChange = (option: string) => {
 		if (mapRef.current) {
-			// Remove existing image overlays
 			mapRef.current.eachLayer(layer => {
 				if (layer instanceof L.ImageOverlay) {
 					mapRef.current?.removeLayer(layer)
 				}
 			})
 		}
-		console.log('geoJsonProject.properties: ', geoJsonProject?.properties)
 		if (option === 'NDVI' && geoJsonProject && geoJsonProject.properties) {
 			const geoLayer = L.geoJSON(geoJsonProject)
 			const imageOverlay = L.imageOverlay(
@@ -69,7 +71,19 @@ export function LayerOptions(props: Props) {
 				imageOverlay.addTo(mapRef.current)
 			}
 		}
-		setOption(option)
+		if (setOption) {
+			setOption(option)
+		}
+	}
+
+	const handlePreviousOptions = () => {
+		setActiveCarousel(prevIndex => Math.max(prevIndex - 1, 0))
+	}
+
+	const handleNextOptions = () => {
+		setActiveCarousel(prevIndex =>
+			Math.min(prevIndex + 1, options.length - visibleOptions)
+		)
 	}
 
 	return (
@@ -84,25 +98,52 @@ export function LayerOptions(props: Props) {
 			boxShadow='dark-lg'
 			overflow={'hidden'}
 		>
-			{options.map((option: Option, index: number) => (
-				<Button
-					key={option.name}
+			{options.length > visibleOptions && (
+				<IconButton
+					aria-label='Previous'
+					icon={<ChevronLeftIcon />}
 					rounded={'none'}
-					backgroundColor={activeOption == option.name ? color : 'white'}
-					border={'none'}
+					onClick={handlePreviousOptions}
+					color={color}
 					borderRightColor={'gray.300'}
 					borderRightStyle={'solid'}
-					borderRightWidth={index < options.length - 1 ? '1px' : '0px'}
-					color={activeOption == option.name ? 'white' : 'gray.600'}
-					fontWeight='medium'
-					_hover={{
-						bg: activeOption == option.name ? color : 'gray.200'
-					}}
-					onClick={() => imageHandle(option.name)}
-				>
-					{option.label}
-				</Button>
-			))}
+					borderRightWidth={'1px'}
+					isDisabled={activeCarousel === 0}
+				/>
+			)}
+
+			{options
+				.slice(activeCarousel, activeCarousel + visibleOptions)
+				.map((option: Option, index: number) => (
+					<Button
+						key={option.name}
+						rounded={'none'}
+						backgroundColor={activeOption === option.name ? color : 'white'}
+						border={'none'}
+						borderRightColor={'gray.300'}
+						borderRightStyle={'solid'}
+						borderRightWidth={index < visibleOptions - 1 ? '1px' : '0px'}
+						color={activeOption === option.name ? 'white' : 'gray.600'}
+						fontWeight='medium'
+						_hover={{
+							bg: activeOption === option.name ? color : 'gray.200'
+						}}
+						onClick={() => handleImageChange(option.name)}
+					>
+						{option.label}
+					</Button>
+				))}
+
+			{options.length > visibleOptions && (
+				<IconButton
+					aria-label='Next'
+					icon={<ChevronRightIcon />}
+					rounded={'none'}
+					onClick={handleNextOptions}
+					color={color}
+					isDisabled={activeCarousel >= options.length - visibleOptions} // Disable next button when at the end
+				/>
+			)}
 		</ButtonGroup>
 	)
 }

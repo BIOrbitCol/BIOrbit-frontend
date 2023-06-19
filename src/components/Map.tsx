@@ -81,8 +81,7 @@ export default function Map(props: Props) {
 	const [geoJsonData, setGeoJsonData] = useState<GeoJsonData[]>([])
 	const [isRenting, setIsRenting] = useState<boolean>(false)
 	const [layerName, setLayerName] = useState<string>('Transparent')
-	const [layerTime, setLayerTime] = useState('2022-01-01/2022-12-31')
-
+	const [layerTime, setLayerTime] = useState('')
 	const [layerTimes, setLayerTimes] = useState<LayerTime[]>([])
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
