@@ -312,6 +312,7 @@ export default function Map(props: Props) {
 																	'ether'
 																)
 															)
+
 															const rentProjectTx =
 																await biorbitContract.rentProject(
 																	geoJson.properties.id,
@@ -369,24 +370,33 @@ export default function Map(props: Props) {
 					flexDir={'column'}
 					gap={3}
 				>
-					<LayerOptions
-						activeOption={layerTime}
-						geoJsonProject={geoJsonSelected}
-						mapRef={mapRef}
-						ndviSelected={ndviSelected}
-						options={layerTimes}
-						setOption={setLayerTime}
-						themeColor={'blue.500'}
-					/>
-					<LayerOptions
-						activeOption={layerName}
-						geoJsonProject={geoJsonSelected}
-						mapRef={mapRef}
-						options={layerNames}
-						setNdviSelected={setNdviSelected}
-						setOption={setLayerName}
-						themeColor={'blue.500'}
-					/>
+					{ndviSelected && (
+						<LayerOptions
+							activeOption={layerTime}
+							geoJsonProject={geoJsonSelected}
+							mapRef={mapRef}
+							ndviSelected={ndviSelected}
+							options={layerTimes}
+							setOption={setLayerTime}
+							themeColor={'blue.500'}
+						/>
+					)}
+					<Box
+						width={'457.69px'}
+						display={'flex'}
+						alignItems={'center'}
+						justifyContent={'center'}
+					>
+						<LayerOptions
+							activeOption={layerName}
+							geoJsonProject={geoJsonSelected}
+							mapRef={mapRef}
+							options={layerNames}
+							setNdviSelected={setNdviSelected}
+							setOption={setLayerName}
+							themeColor={'blue.500'}
+						/>
+					</Box>
 				</Box>
 			)}
 			{geoJsonSelected?.properties.id && (
