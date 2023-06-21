@@ -149,7 +149,7 @@ export function StatsModal(props: Props) {
 							padding={1}
 							minW={'max-content'}
 							display={'flex'}
-							justifyContent={'center'}
+							justifyContent={'space-around'}
 							gap={1}
 						>
 							<Box>
@@ -188,11 +188,16 @@ export function StatsModal(props: Props) {
 									</Table>
 								</TableContainer>
 							</Box>
-							<Box mt={2}>
+							<Box
+								mt={2}
+								display={'flex'}
+								flexDir={'column'}
+								justifyContent={'center'}
+							>
 								<Heading fontSize='lg' color='gray.700'>
 									Cover Forest
 								</Heading>
-								<Plot />
+								<Plot geoJson={geoJson} />
 							</Box>
 						</Box>
 						{geoJson?.properties?.owner === address && (
