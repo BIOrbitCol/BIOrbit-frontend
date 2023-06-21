@@ -53,7 +53,7 @@ export function Plot(props: Props) {
 					dataKey='date'
 					angle={-20}
 					fontSize={8}
-					tickMargin={12}
+					tickMargin={14}
 					label={{ value: 'Date', position: 'insideBottomRight', offset: 0 }}
 					scale='band'
 				/>
